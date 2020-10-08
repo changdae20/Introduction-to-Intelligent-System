@@ -155,7 +155,7 @@ int main(int argc, char** argv){
 	
         ros::spinOnce();
         control_rate.sleep();
-        printf("car pose : %.2f,%.2f,%.2f \n", car_pose.x, car_pose.y, car_pose.th);
+        printf("car pose : %.2f,%.2f,%.2f current goal : %d\n", car_pose.x, car_pose.y, car_pose.th, current_goal);
     }
 
     return 0;

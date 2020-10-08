@@ -1,4 +1,5 @@
 #include <project1/pid.h>
+#include <math.h>
 
 PID::PID(){
 
@@ -24,8 +25,9 @@ float PID::get_control(point car_pose, point goal_pose){
      * implement pid algorithm
      *
     */
-    error_diff = goal_pose.th - car_pose.th - error;
-    error = goal_pose.th - car_pose.th;
+
+    error_diff = atan2(goal_pose.y-car_pose.y,goal_pose.x-car_pose.x) - car_pose.th - error;
+    error = atan2(goal_pose.y-car_pose.y,goal_pose.x-car_pose.x) - car_pose.th;
     error_sum = error_sum + error;
 
     ctrl = Kp * error + Ki * 0.1 * error_sum + (Kd/0.1) * error_diff;

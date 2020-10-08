@@ -156,7 +156,6 @@ int main(int argc, char** argv){
 	// use predefined publisher, "car_ctrl_pub" and use predefined variable, "drive_msg_stamped".
     drive_msg_stamped.drive.speed = 1.0;
 	drive_msg_stamped.drive.steering_angle += ctrl_value;
-    drive_msg_stamped.drive.speed = 1.0;
 	car_ctrl_pub.publish(drive_msg_stamped);
 
 	// 3.check whether pioneer reached a currently following way point or not.

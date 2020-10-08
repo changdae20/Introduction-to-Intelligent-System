@@ -52,7 +52,7 @@ int main(int argc, char** argv){
                 std::string("<collision>") +
                 std::string("<origin xyz=\"0 0 0\" rpy=\"0 0 0\" />") +
                 std::string("<geometry>") +
-                std::string("<sphere radius=\"0\"/>") +
+                std::string("<sphere radius=\"0.01\"/>") +
                 std::string("</geometry>") +
                 std::string("</collision>") +
                 std::string("</link>") +

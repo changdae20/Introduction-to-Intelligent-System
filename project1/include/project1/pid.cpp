@@ -24,7 +24,7 @@ float PID::get_control(point car_pose, point goal_pose){
      * implement pid algorithm
      *
     */
-    error_diff = goal_pose.th - car_pose.th - error
+    error_diff = goal_pose.th - car_pose.th - error;
     error = goal_pose.th - car_pose.th;
     error_sum = error_sum + error;
 

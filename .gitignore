@@ -1,13 +1,23 @@
-# default
+### default ###
+# exclude all
+/*
+# include README.md
 !README.md
-racecar
-racecar-simulator
-CMakeLists.txt
+###############
 
-# add projects here
+#### items ####
+# add projects
 !project1/
 !project2/
+
+# add skeleton
 !project1.tar.gz
 
-# don't touch
-*
+###############
+
+### default ###
+racecar/
+racecar-simulator/
+CMakeLists.txt
+###############
+

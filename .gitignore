@@ -1,1 +1,13 @@
+# default
+!README.md
+racecar
+racecar-simulator
+CMakeLists.txt
 
+# add projects here
+!project1/
+!project2/
+
+
+# don't touch
+*

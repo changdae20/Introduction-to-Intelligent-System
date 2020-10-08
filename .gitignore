@@ -7,7 +7,7 @@ CMakeLists.txt
 # add projects here
 !project1/
 !project2/
-
+!project1.tar.gz
 
 # don't touch
 *

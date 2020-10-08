@@ -133,7 +133,25 @@ int main(int argc, char** argv){
          *    if distance is less than 0.2m (you can change this threshold), pursue next way point.
          * 4. check whether car reached final way point(end of path). if it is, terminate controller.
         */
-        
+
+	// 1. make control value for steering angle using PID class. An instance is predefined as "pid_ctrl".
+        float ctrl_value = pid_ctrl.get_control(car_pose, path[current_goal]);
+	
+	// 2. publish control to racecar.
+	// use predefined publisher, "car_ctrl_pub" and use predefined variable, "drive_msg_stamped".
+	drive_msg_stamped.steering += ctrl_value;
+	car_ctrl_pub(drive_msg_stamped);
+
+	// 3.check whether pioneer reached a currently following way point or not.
+        //   calculate distance between current pose of robot and currently following way point.
+        //   if distance is less than 0.2m (you can change this threshold), pursue next way point.
+	float dist_square = (car_pose.x - path[current_goal].x)*(car_pose.x - path[current_goal].x) + (car_pose.y - path[current_goal].y)*(car_pose.y - path[current_goal].y);
+	float dist_thres = 0.2
+	if(dist_square < dist_thres * dist_thres) current_goal = current_goal + 1;
+
+	// 4. check whether car reached final way point(end of path). if it is, terminate controller.
+	if(current_goal == 9) break;
+	
         ros::spinOnce();
         control_rate.sleep();
         printf("car pose : %.2f,%.2f,%.2f \n", car_pose.x, car_pose.y, car_pose.th);

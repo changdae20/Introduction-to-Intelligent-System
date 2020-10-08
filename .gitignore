@@ -1,7 +1,5 @@
 ### default ###
-# exclude all
 /*
-# include README.md
 !README.md
 ###############
 
@@ -9,6 +7,8 @@
 # add projects
 !project1/
 !project2/
+
+!racecar/
 
 # add skeleton
 !project1.tar.gz

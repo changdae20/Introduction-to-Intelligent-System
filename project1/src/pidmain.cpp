@@ -33,6 +33,19 @@ int main(int argc, char** argv){
 
     /* Do not revise or delete this code */
     //visualize path to GAZEBO.
+
+    std::string color[10] = {
+        std::string("Grey"),
+        std::string("White"),
+        std::string("Black"),
+        std::string("Red"),
+        std::string("Green"),
+        std::string("Blue"),
+        std::string("Yellow"),
+        std::string("Purple"),
+        std::string("Orange")
+    };
+
     for(int i = 0; i < path.size(); i++){
         printf("[%d] way point was spawned\n",i);
         gazebo_msgs::SpawnModel model;
@@ -59,7 +72,9 @@ int main(int argc, char** argv){
                 std::string("<gazebo reference=\"ball\">") +
                 std::string("<mu1>10</mu1>") +
                 std::string("<mu2>10</mu2>") +
-                std::string("<material>Gazebo/Blue</material>") +
+                std::string("<material>Gazebo/") +
+                color[i] +
+                std::string("</material>") +
                 std::string("<turnGravityOff>true</turnGravityOff>") +
                 std::string("</gazebo>") +
                 std::string("</robot>");
@@ -139,8 +154,8 @@ int main(int argc, char** argv){
 	
 	// 2. publish control to racecar.
 	// use predefined publisher, "car_ctrl_pub" and use predefined variable, "drive_msg_stamped".
-	drive_msg_stamped.drive.steering_angle += ctrl_value;
     drive_msg_stamped.drive.speed = 1.0;
+	drive_msg_stamped.drive.steering_angle += ctrl_value;
 	car_ctrl_pub.publish(drive_msg_stamped);
 
 	// 3.check whether pioneer reached a currently following way point or not.

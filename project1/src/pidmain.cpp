@@ -139,14 +139,14 @@ int main(int argc, char** argv){
 	
 	// 2. publish control to racecar.
 	// use predefined publisher, "car_ctrl_pub" and use predefined variable, "drive_msg_stamped".
-	drive_msg_stamped.steering += ctrl_value;
-	car_ctrl_pub(drive_msg_stamped);
+	drive_msg_stamped.drive.steering_angle += ctrl_value;
+	car_ctrl_pub.publish(drive_msg_stamped);
 
 	// 3.check whether pioneer reached a currently following way point or not.
         //   calculate distance between current pose of robot and currently following way point.
         //   if distance is less than 0.2m (you can change this threshold), pursue next way point.
 	float dist_square = (car_pose.x - path[current_goal].x)*(car_pose.x - path[current_goal].x) + (car_pose.y - path[current_goal].y)*(car_pose.y - path[current_goal].y);
-	float dist_thres = 0.2
+	float dist_thres = 0.2;
 	if(dist_square < dist_thres * dist_thres) current_goal = current_goal + 1;
 
 	// 4. check whether car reached final way point(end of path). if it is, terminate controller.

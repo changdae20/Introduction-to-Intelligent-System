@@ -34,18 +34,6 @@ int main(int argc, char** argv){
     /* Do not revise or delete this code */
     //visualize path to GAZEBO.
 
-    std::string color[9] = {
-        std::string("Red"),
-        std::string("Purple"),
-        std::string("Blue"),
-        std::string("Blue"),
-        std::string("Blue"),
-        std::string("Blue"),
-        std::string("Blue"),
-        std::string("Blue"),
-        std::string("Black")
-    };
-
     for(int i = 0; i < path.size(); i++){
         printf("[%d] way point was spawned\n",i);
         gazebo_msgs::SpawnModel model;
@@ -72,9 +60,7 @@ int main(int argc, char** argv){
                 std::string("<gazebo reference=\"ball\">") +
                 std::string("<mu1>10</mu1>") +
                 std::string("<mu2>10</mu2>") +
-                std::string("<material>Gazebo/") +
-                color[i] +
-                std::string("</material>") +
+                std::string("<material>Gazebo/Blue</material>") +
                 std::string("<turnGravityOff>true</turnGravityOff>") +
                 std::string("</gazebo>") +
                 std::string("</robot>");
@@ -154,11 +140,11 @@ int main(int argc, char** argv){
         
         // 2. publish control to racecar.
         // use predefined publisher, "car_ctrl_pub" and use predefined variable, "drive_msg_stamped".
-        if (fabs(ctrl_value) > M_PI / 3)
-            ctrl_value = M_PI / 3 * ctrl_value / fabs(ctrl_value);
+        float max_steering = 16.0/180.0 * M_PI;
+        if (fabs(ctrl_value) > max_steering)
+            ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
 
-
-        drive_msg_stamped.drive.speed = 1.0;
+        drive_msg_stamped.drive.speed = 2.0;
         drive_msg_stamped.drive.steering_angle = ctrl_value;
         car_ctrl_pub.publish(drive_msg_stamped);
 
@@ -166,7 +152,7 @@ int main(int argc, char** argv){
         //   calculate distance between current pose of robot and currently following way point.
         //   if distance is less than 0.2m (you can change this threshold), pursue next way point.
         float distance = hypot(car_pose.x - path[current_goal].x, car_pose.y - path[current_goal].y);
-        float threshold = 0.1;
+        float threshold = 0.2;
         if(distance < threshold) ++current_goal;
 
         // 4. check whether car reached final way point(end of path). if it is, terminate controller.

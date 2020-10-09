@@ -160,7 +160,7 @@ int main(int argc, char** argv){
 	
         ros::spinOnce();
         control_rate.sleep();
-        printf("car pose : %.2f,%.2f,%.2f current goal : %d steering: %.2f\n", car_pose.x, car_pose.y, car_pose.th, current_goal, ctrl_value);
+        printf("car pose : %.2f,%.2f,%.2f \n", car_pose.x, car_pose.y, car_pose.th);
     }
 
     return 0;

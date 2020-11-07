@@ -167,6 +167,14 @@ void rrtTree::visualizeTree(std::vector<traj> path){
 
 void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, double d) {
     //TODO
+    ++count;
+    root[count] = new node;
+    root[count]->idx = count;
+    root[count]->rand = x_rand;
+    root[count]->location = x_new;
+    root[count]->idx_parent = idx_near;
+    root[count]->alpha = alpha;
+    root[count]->d = d;
 }
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
@@ -191,6 +199,23 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     //TODO
+    // double R = L / tan(alpha);
+    double x = x1.x, y = x1.y, th = x1.th;
+    double beta = d / R;
+
+    double x_c = x - R * sin(th), y_c = y + R * cos(th);
+    
+        x = x_c + R * sin(th + beta);
+        y = y_c - R * cos(th + beta);
+        th += beta;
+
+        double i = x / res + map_origin_x;
+        double j = y / res + map_origin_y;
+
+        if (map.at<uchar>(i, j) < 125) return false;
+
+
+    return true;
 }
 
 std::vector<traj> rrtTree::backtracking_traj(){

@@ -245,6 +245,8 @@ int main(int argc, char** argv){
 		5. if robot reach the final goal
 			finish RUNNING (state = FINISH)
 	    */
+
+        cmd_vel_pub.publish(cmd);
 	    
         } break;
 

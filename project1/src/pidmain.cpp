@@ -117,7 +117,7 @@ int main(int argc, char** argv){
 
     /* controller */
     
-    int current_goal = 1;
+    int current_goal = 0;
     PID pid_ctrl;
     ackermann_msgs::AckermannDriveStamped drive_msg_stamped;
 
@@ -180,18 +180,18 @@ void callback_state(gazebo_msgs::ModelStatesConstPtr msgs){
 void setpath(){
 
     point point0;    point0.x = -4.0;    point0.y = -4.0;    point0.th = 0.0;
-    point point1;    point1.x = -4.0;    point1.y = 0.0;    point1.th = 0.5 * M_PI;
-    point point2;    point2.x = -4.0;    point2.y = 4.0;    point2.th = 0.25 * M_PI;
+    point point1;    point1.x = -4.0;    point1.y = 0.0;    point1.th = -0.5 * M_PI;
+    point point2;    point2.x = -4.0;    point2.y = 4.0;    point2.th = -1.0 * M_PI;
 
-    point point3;    point3.x = 0.0;    point3.y = 4.0;    point3.th = -0.5 * M_PI;
-    point point4;    point4.x = 0.0;    point4.y = 0.0;    point4.th = -0.5 * M_PI;
-    point point5;    point5.x = 0.0;    point5.y = -4.0;    point5.th = -0.25 * M_PI;
+    point point3;    point3.x = 0.0;    point3.y = 4.0;    point3.th = -1.0 * M_PI;
+    point point4;    point4.x = 0.0;    point4.y = 0.0;    point4.th = 0.25 * M_PI;
+    point point5;    point5.x = 0.0;    point5.y = -4.0;    point5.th = -0.5 * M_PI;
 
-    point point6;    point6.x = 4.0;    point6.y = -4.0;    point6.th = 0.5 * M_PI;
-    point point7;    point7.x = 4.0;    point7.y = 0.0;    point7.th = 0.5 * M_PI;
-    point point8;    point8.x = 4.0;    point8.y = 4.0;    point8.th = 0.5 * M_PI;
+    point point6;    point6.x = 4.0;    point6.y = -4.0;    point6.th = 0 * M_PI;
+    point point7;    point7.x = 4.0;    point7.y = 0.0;    point7.th = 0 * M_PI;
+    point point8;    point8.x = 4.0;    point8.y = 4.0;    point8.th = 0 * M_PI;
 
-    path.push_back(point0);    path.push_back(point1);    path.push_back(point2);
-    path.push_back(point3);    path.push_back(point4);    path.push_back(point5);
+    path.push_back(point0);    path.push_back(point4);    path.push_back(point5);
     path.push_back(point6);    path.push_back(point7);    path.push_back(point8);
+    path.push_back(point3);    path.push_back(point2);    path.push_back(point1);
 }

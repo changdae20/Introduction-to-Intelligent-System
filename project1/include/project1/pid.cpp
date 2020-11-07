@@ -31,7 +31,9 @@ float PID::get_control(point car_pose, point goal_pose){
      *
     */
 
-    error = atan2(goal_pose.y-car_pose.y, goal_pose.x-car_pose.x) - car_pose.th;
+    float relative_angle = atan2(goal_pose.y - car_pose.y, goal_pose.x - car_pose.x);
+    float raw_error = relative_angle - car_pose.th;
+    error = -M_PI + fmod(3 * M_PI + raw_error, 2 * M_PI);
     ctrl = Kp * error + Ki * error_sum - Kd * error_diff;
     error_sum += error;
     error_diff = error;

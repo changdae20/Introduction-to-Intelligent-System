@@ -247,6 +247,12 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
 
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
+    struct node current_node = ptrTable[nearestNeighbor(this->x_goal)];
+    std::vector<traj> path;
+    while(currnet_node != this->x_init){
+        struct traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha}
+    }
+    struct traj pt{}
 }
 
 double rrtTree::distance(point p1, point p2) {

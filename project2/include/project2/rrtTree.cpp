@@ -187,9 +187,11 @@ point rrtTree::randomState(double x_max, double x_min, double y_max, double y_mi
 
 int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     //TODO
+    double max_beta = MaxStep * tan(max_alpha) / L;
     int min_idx = 0;
     for (int i = 1; i <= count; ++i) {
-        if (distance(x_rand, ptrTable[i]->location) < distance(x_rand, ptrTable[min_idx]->location))
+        if (distance(x_rand, ptrTable[i]->location) < distance(x_rand, ptrTable[min_idx]->location)
+            && fabs(thetaModulo(ptrTable[i]->location.th, x_rand.th)) < max_beta)
             min_idx = i;
     }
     return min_idx;
@@ -228,10 +230,10 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
         double i = x / res + map_origin_x;
         double j = y / res + map_origin_y;
 
-        if (map.at<uchar>(i, j) < 125) return false;
+        if (map.at<uchar>(i, j) < 125) return true;
     }
 
-    return true;
+    return false;
 }
 
 std::vector<traj> rrtTree::backtracking_traj(){
@@ -240,4 +242,8 @@ std::vector<traj> rrtTree::backtracking_traj(){
 
 double rrtTree::distance(point p1, point p2) {
     return hypot(p2.x - p1.x, p2.y - p1.y);
+}
+
+double rrtTree::thetaModulo(double th1, double th2) {
+    return -M_PI + fmod(3 * M_PI + th1 + th2, 2 * M_PI);
 }

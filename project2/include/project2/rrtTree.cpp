@@ -1,6 +1,7 @@
 #include "rrtTree.h"
 #include <unistd.h>
 #include <ros/ros.h>
+#include <stdlib.h>
 #define PI 3.14159265358979323846
 
 double max_alpha = 0.2;
@@ -183,6 +184,14 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
     //TODO
+    double max = 32767;
+    double x_rand = x_min + rand()%((int)(x_max-x_min)) + ((double)rand())/max;
+    double y_rand = y_min + rand()%((int)(y_max-y_min)) + ((double)rand())/max;
+    
+    point newpoint;
+    newpoint.x = x_rand;
+    newpoint.y = y_rand;
+    return newpoint;
 }
 
 int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {

@@ -168,13 +168,13 @@ void rrtTree::visualizeTree(std::vector<traj> path){
 void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, double d) {
     //TODO
     ++count;
-    root[count] = new node;
-    root[count]->idx = count;
-    root[count]->rand = x_rand;
-    root[count]->location = x_new;
-    root[count]->idx_parent = idx_near;
-    root[count]->alpha = alpha;
-    root[count]->d = d;
+    ptrTable[count] = new node;
+    ptrTable[count]->idx = count;
+    ptrTable[count]->rand = x_rand;
+    ptrTable[count]->location = x_new;
+    ptrTable[count]->idx_parent = idx_near;
+    ptrTable[count]->alpha = alpha;
+    ptrTable[count]->d = d;
 }
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
@@ -191,6 +191,7 @@ int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
 
 int rrtTree::nearestNeighbor(point x_rand) {
     //TODO
+    
 }
 
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {

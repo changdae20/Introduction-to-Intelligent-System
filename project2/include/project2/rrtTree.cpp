@@ -200,7 +200,7 @@ int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     int min_idx = 0;
     for (int i = 1; i <= count; ++i) {
         if (distance(x_rand, ptrTable[i]->location) < distance(x_rand, ptrTable[min_idx]->location)
-            && fabs(thetaModulo(ptrTable[i]->location.th, x_rand.th)) < max_beta)
+            && fabs(thetaModulo(ptrTable[i]->location.th, -x_rand.th)) < max_beta)
             min_idx = i;
     }
     return min_idx;

@@ -187,22 +187,22 @@ point rrtTree::randomState(double x_max, double x_min, double y_max, double y_mi
 
 int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     //TODO
+    int min_idx = 0;
+    for (int i = 1; i <= count; ++i) {
+        if (distance(x_rand, ptrTable[i]->location) < distance(x_rand, ptrTable[min_idx]->location))
+            min_idx = i;
+    }
+    return min_idx;
 }
 
 int rrtTree::nearestNeighbor(point x_rand) {
     //TODO
     int index = 0;
-    double min_distance = hypot(
-        x_rand.x-root.location.x, 
-        x_rand.y-root.location.y);
-    for(int i=1;i<count+1;i++){
-        if(min_distance > hypot(
-            x_rand.x-ptrTable[i].location.x, 
-            x_rand.y-ptrTable[i].location.y);){
-                min_distance = hypot(
-                x_rand.x-ptrTable[i].location.x, 
-                x_rand.y-ptrTable[i].location.y);
-                index = i;
+    double min_distance = distance(x_rand, root->location);
+    for(int i = 1; i <= count; ++i) {
+        if(min_distance > distance(x_rand, ptrTable[i]->location)) {
+            min_distance = distance(x_rand, ptrTable[i]->location);
+            index = i;
         }
     }
     return index;
@@ -236,4 +236,8 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
 
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
+}
+
+double rrtTree::distance(point p1, point p2) {
+    return hypot(p2.x - p1.x, p2.y - p1.y);
 }

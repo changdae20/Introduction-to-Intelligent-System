@@ -191,17 +191,21 @@ int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
 
 int rrtTree::nearestNeighbor(point x_rand) {
     //TODO
+    int index = 0;
     double min_distance = hypot(
         x_rand.x-root.location.x, 
         x_rand.y-root.location.y);
     for(int i=1;i<count+1;i++){
         if(min_distance > hypot(
             x_rand.x-ptrTable[i].location.x, 
-            x_rand.y-ptrTable[i].location.y);)
-            min_distance = hypot(
-            x_rand.x-ptrTable[i].location.x, 
-            x_rand.y-ptrTable[i].location.y);
+            x_rand.y-ptrTable[i].location.y);){
+                min_distance = hypot(
+                x_rand.x-ptrTable[i].location.x, 
+                x_rand.y-ptrTable[i].location.y);
+                index = i;
+        }
     }
+    return index;
 }
 
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {

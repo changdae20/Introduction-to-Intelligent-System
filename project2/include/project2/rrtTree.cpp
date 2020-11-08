@@ -218,7 +218,7 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     double x = x1.x, y = x1.y, th = x1.th;
     double beta = d / R;
 
-    while(){
+    while(hypot(x-x2.x, y-x2.y) > d){
         double x_c = x - R * sin(th), y_c = y + R * cos(th);
     
         x = x_c + R * sin(th + beta);

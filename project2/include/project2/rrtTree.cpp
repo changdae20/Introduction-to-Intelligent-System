@@ -86,10 +86,7 @@ void rrtTree::visualizeTree(){
     cv::Mat map_c;
     cv::Mat imgResult;
     cv::cvtColor(this->map, map_c, CV_GRAY2BGR);
-    printf("Before resize\n");
-    printf("rows of this->map : %d, cols of this->map : %d",this->map.rows, this->map.cols);
     cv::resize(map_c, imgResult, cv::Size(), Res, Res);
-    printf("After resize\n");
     for(int i = 1; i < this->count; i++) {
         idx_parent = this->ptrTable[i]->idx_parent;
 	    for(int j = 0; j < 10; j++) {
@@ -183,34 +180,24 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
     //TODO
 
     printf("The start of generateRRT in rrtTree class\n");
-    for(int i=0;i<K;i++){
-        printf("a\n");
+    //for(int i=0;i<K;i++){
+    while(count < K){
         point x_rand = randomState(x_max,x_min,y_max,y_min);
-        printf("b\n");
         double out[5];
-        printf("c\n");
         int x_near = nearestNeighbor(x_rand, MaxStep);
-        //int x_near = nearestNeighbor(x_rand);
-        printf("d\n");
         int valid = randompath(out, ptrTable[x_near]->location, x_rand, MaxStep);
-        printf("valid :%d\n",valid);
         if(valid == 1){
-            printf("e\n");
             point x_new;
             x_new.x = out[0];
             x_new.y = out[1];
             x_new.th = out[2];
-            printf("f\n");
             addVertex(x_new, x_rand, x_near, out[3], out[4]);
-            printf("x_new : (%f, %f)\n",x_new.x,x_new.y);
-            printf("x_rand : (%f, %f)\n",x_rand.x,x_rand.y);
-            printf("x_near : (%f, %f)\n",ptrTable[x_near]->location.x,ptrTable[x_near]->location.y);
-            printf("ptrTable[count-1]->location : (%f, %f)\n",ptrTable[count-1]->location.x,ptrTable[count-1]->location.y);
-            //visualizeTree();
-            //getchar();
         }
-        
     }
+    printf("before\n");
+    visualizeTree();
+    printf("after\n");
+    getchar();
     visualizeTree();
     getchar();
 }
@@ -231,7 +218,6 @@ point rrtTree::randomState(double x_max, double x_min, double y_max, double y_mi
 
 int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     //TODO
-    printf("The start of neartestNeighbor with 2 parameters\n");
     double max_beta = MaxStep * tan(max_alpha) / L;
     //printf("max_beta : %f\n",max_beta);
     int min_idx = 0;
@@ -241,7 +227,6 @@ int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
             && fabs(thetaModulo(ptrTable[i]->location.th, -relative_angle)) < max_beta)
             min_idx = i;
     }
-    printf("End ");
     return min_idx;
 }
 
@@ -279,7 +264,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     }
     double min_distance = distance(x_rand,sample_point[0]);
     for(int i=1; i<sample_size; i++){
-        if(distance(x_rand,sample_point[i])<min_distance){
+        if(distance(x_rand,sample_point[i])<min_distance ){
             min_distance = distance(x_rand,sample_point[i]);
             min_distance_idx = i;
         }
@@ -290,24 +275,21 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     out[3] = alpha_array[min_distance_idx];
     out[4] = d_array[min_distance_idx];
 
-    //return 1;
     return 1-(int)isCollision(x_near, sample_point[min_distance_idx], d_array[min_distance_idx], L / tan(alpha_array[min_distance_idx]));
 }
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     //TODO
-    double x_c = x1.x-R*sin(x1.th);
-    double y_c = x1.y+R*cos(x1.th);
-    double alpha = atan(L/R);
-    double da = res/R;
-    int i = 0;
-    while(da*i<=alpha){
-        double x_temp = x_c + R*sin(x1.th + da*i);
-        double y_temp = y_c - R*cos(x1.th + da*i);
+    double x_c = x1.x - R*sin(x1.th);
+    double y_c = x1.y + R*cos(x1.th);
+    double beta = d / R;
+    double dbeta = res / R;
+    for (int i = 1; i < d / res; ++i) {
+        double x_temp = x_c + R * sin(x1.th + dbeta * i);
+        double y_temp = y_c - R * cos(x1.th + dbeta * i);
         int i1_temp = x_temp / res + map_origin_x;
         int j1_temp = y_temp / res + map_origin_y;
         if (map.at<uchar>(i1_temp, j1_temp) < 125) return true;
-        i++;
     }
     return false;
 }

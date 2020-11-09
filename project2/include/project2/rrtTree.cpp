@@ -180,6 +180,19 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
+    for(i=0;i<K;i++){
+        point x_rand = randomState(x_max,x_min,y_max,y_min);
+        double out[5];
+        int x_near = nearestNeighbor(x_rand, MaxStep);
+        int valid = randompath(out, ptrTable[x_near], x_rand, MaxStep);
+        if(valid == 1){
+            point x_new;
+            x_new.x = out[0];
+            x_new.y = out[1];
+            x_new.th = out[2];
+            addVertex(x_new, x_rand, x_near, out[3], out[4]);
+        }
+    }
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {

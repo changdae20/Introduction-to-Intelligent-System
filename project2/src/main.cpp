@@ -16,7 +16,7 @@
 #include <project2/pid.h>
 #include <math.h>
 #include <pwd.h>
-#include <conio.h> // For Debugging, Should delete at submitting
+
 //map spec
 cv::Mat map;
 double res;
@@ -278,7 +278,7 @@ void generate_path_RRT()
         rrtTree rrtTree(waypoints[i],waypoints[i+1]);
         rrtTree.generateRRT(world_x_max,world_x_min,world_y_max,world_y_min,K,MaxStep);
         rrtTree.visualizeTree();
-        getch();
+        getchar();
         std::vector<traj> path_to_waypoint = rrtTree.backtracking_traj();
         for(int j=0; j<path_to_waypoint.size(); j++) path_RRT.push_back(path_to_waypoint[path_to_waypoint.size()-j-1]);
     }

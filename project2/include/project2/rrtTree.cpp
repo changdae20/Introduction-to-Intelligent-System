@@ -295,7 +295,7 @@ std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
     node current_node = *ptrTable[nearestNeighbor(this->x_goal)];
     std::vector<traj> path;
-    while(current_node.location != this->x_init){
+    while((current_node.location.x != this->x_init.x) || (current_node.location.y != this->x_init.y) || (current_node.location.th != this->x_init.th)) {
         traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
         path.push_back(current_node_traj);
         current_node = *ptrTable[current_node.idx_parent];

@@ -265,20 +265,26 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     //TODO
-    // double R = L / tan(alpha);
-    double x = x1.x, y = x1.y, th = x1.th;
-    double beta = d / R;
+    int i1 = x1.x / res + map_origin_x;
+    int i2 = x2.x / res + map_origin_x;
+    int j1 = x1.y / res + map_origin_y;
+    int j2 = x2.y / res + map_origin_y;
 
-    while(hypot(x-x2.x, y-x2.y) > d){
-        double x_c = x - R * sin(th), y_c = y + R * cos(th);
-    
-        x = x_c + R * sin(th + beta);
-        y = y_c - R * cos(th + beta);
-        th += beta;
+    if (i1 > i2) {
+        int tmp = i1; i1 = i2; i2 = tmp;
+        tmp = j1; j1 = j2; j2 = tmp;
+    }
+    for (int i = i1; i < i2; ++i) {
+        int j = (j2 - j1) / (i2 - i1) * (i - i1) + j1;
+        if (map.at<uchar>(i, j) < 125) return true;
+    }
 
-        double i = x / res + map_origin_x;
-        double j = y / res + map_origin_y;
-
+    if (j1 > j2) {
+        int tmp = j1; j1 = j2; j2 = tmp;
+        tmp = i1; i1 = i2; i2 = tmp;
+    }
+    for (int j = j1; j < j2; ++j) {
+        int i = (i2 - i1) / (j2 - j1) * (j - j1) + i1;
         if (map.at<uchar>(i, j) < 125) return true;
     }
 

@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 15;
-int K = 1500;
+int K = 15000;
 double MaxStep = 4;
 
 //way points
@@ -248,9 +248,12 @@ int main(int argc, char** argv){
 		5. if robot reach the final goal
 			finish RUNNING (state = FINISH)
 	    */
-
-        cmd_vel_pub.publish(cmd);
-	    
+        while(look_ahead_idx<path_RRT.size()){
+            setcmdvel(path_RRT[look_ahead_idx].d*60, path_RRT[look_ahead_idx].alpha);
+            cmd_vel_pub.publish(cmd);
+            if(hypot(robot_pose.x - path_RRT[look_ahead_idx].x,robot_pose.y - path_RRT[look_ahead_idx].y)<0.2) look_ahead_idx++;
+        }
+        state = FINISH;
         } break;
 
         case FINISH: {

@@ -181,6 +181,7 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
+
     printf("The start of generateRRT in rrtTree class\n");
     for(int i=0;i<K;i++){
         printf("a\n");
@@ -189,6 +190,7 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
         double out[5];
         printf("c\n");
         int x_near = nearestNeighbor(x_rand, MaxStep);
+        //int x_near = nearestNeighbor(x_rand);
         printf("d\n");
         int valid = randompath(out, ptrTable[x_near]->location, x_rand, MaxStep);
         printf("valid :%d\n",valid);
@@ -200,11 +202,17 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
             x_new.th = out[2];
             printf("f\n");
             addVertex(x_new, x_rand, x_near, out[3], out[4]);
-            printf("g\n");
-            visualizeTree();
-            getchar();
+            printf("x_new : (%f, %f)\n",x_new.x,x_new.y);
+            printf("x_rand : (%f, %f)\n",x_rand.x,x_rand.y);
+            printf("x_near : (%f, %f)\n",ptrTable[x_near]->location.x,ptrTable[x_near]->location.y);
+            printf("ptrTable[count-1]->location : (%f, %f)\n",ptrTable[count-1]->location.x,ptrTable[count-1]->location.y);
+            //visualizeTree();
+            //getchar();
         }
+        
     }
+    visualizeTree();
+    getchar();
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
@@ -228,9 +236,9 @@ int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     //printf("max_beta : %f\n",max_beta);
     int min_idx = 0;
     for (int i = 1; i < count; ++i) {
-        //printf("i : %d, count : %d\n",i,count);
+        float relative_angle = atan2(x_rand.y - ptrTable[i]->location.y, x_rand.x - ptrTable[i]->location.x);
         if (distance(x_rand, ptrTable[i]->location) < distance(x_rand, ptrTable[min_idx]->location)
-            && fabs(thetaModulo(ptrTable[i]->location.th, -x_rand.th)) < max_beta)
+            && fabs(thetaModulo(ptrTable[i]->location.th, -relative_angle)) < max_beta)
             min_idx = i;
     }
     printf("End ");
@@ -253,24 +261,24 @@ int rrtTree::nearestNeighbor(point x_rand) {
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO
     //printf("The start of randompath function\n");
-    int sample_size = 30;
-    double d_array[30]; 
-    double alpha_array[30];
-    point sample_point[30];
+    int sample_size = 100;
+    double d_array[100]; 
+    double alpha_array[100];
+    point sample_point[100];
     int min_distance_idx = 0;
     //printf("before for loop in randompath\n");
-    for(int i=0; i<30; i++){
-        d_array[i] = randomState(MaxStep,0,0,0).x;
-        alpha_array[i] = randomState(max_alpha,-max_alpha,0,0).x;
+    for(int i=0; i<sample_size; i++){
+        d_array[i] = MaxStep*rand()/RAND_MAX;
+        alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
         //printf("%dth sample path, d_array[%d] : %f, alpha_array[%d] : %f\n",i,i,d_array[i],i,alpha_array[i]);
-        double radius = L / tan(fabs(alpha_array[i]));
+        double radius = L / tan(alpha_array[i]);
         double beta = d_array[i] / radius;
         sample_point[i].x = x_near.x - radius*sin(x_near.th) + radius*sin(x_near.th + beta);
-        sample_point[i].x = x_near.x + radius*cos(x_near.th) - radius*cos(x_near.th + beta);
+        sample_point[i].y = x_near.y + radius*cos(x_near.th) - radius*cos(x_near.th + beta);
         sample_point[i].th = thetaModulo(x_near.th , beta);
     }
     double min_distance = distance(x_rand,sample_point[0]);
-    for(int i=1; i<30; i++){
+    for(int i=1; i<sample_size; i++){
         if(distance(x_rand,sample_point[i])<min_distance){
             min_distance = distance(x_rand,sample_point[i]);
             min_distance_idx = i;
@@ -282,35 +290,25 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     out[3] = alpha_array[min_distance_idx];
     out[4] = d_array[min_distance_idx];
 
-    return 1;
-    //return 1-(int)isCollision(x_near, sample_point[min_distance_idx], d_array[min_distance_idx], L / tan(fabs(alpha_array[min_distance_idx])));
+    //return 1;
+    return 1-(int)isCollision(x_near, sample_point[min_distance_idx], d_array[min_distance_idx], L / tan(alpha_array[min_distance_idx]));
 }
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     //TODO
-    int i1 = x1.x / res + map_origin_x;
-    int i2 = x2.x / res + map_origin_x;
-    int j1 = x1.y / res + map_origin_y;
-    int j2 = x2.y / res + map_origin_y;
-
-    if (i1 > i2) {
-        int tmp = i1; i1 = i2; i2 = tmp;
-        tmp = j1; j1 = j2; j2 = tmp;
+    double x_c = x1.x-R*sin(x1.th);
+    double y_c = x1.y+R*cos(x1.th);
+    double alpha = atan(L/R);
+    double da = res/R;
+    int i = 0;
+    while(da*i<=alpha){
+        double x_temp = x_c + R*sin(x1.th + da*i);
+        double y_temp = y_c - R*cos(x1.th + da*i);
+        int i1_temp = x_temp / res + map_origin_x;
+        int j1_temp = y_temp / res + map_origin_y;
+        if (map.at<uchar>(i1_temp, j1_temp) < 125) return true;
+        i++;
     }
-    for (int i = i1; i < i2; ++i) {
-        int j = (j2 - j1) / (i2 - i1) * (i - i1) + j1;
-        if (map.at<uchar>(i, j) < 125) return true;
-    }
-
-    if (j1 > j2) {
-        int tmp = j1; j1 = j2; j2 = tmp;
-        tmp = i1; i1 = i2; i2 = tmp;
-    }
-    for (int j = j1; j < j2; ++j) {
-        int i = (i2 - i1) / (j2 - j1) * (j - j1) + i1;
-        if (map.at<uchar>(i, j) < 125) return true;
-    }
-
     return false;
 }
 

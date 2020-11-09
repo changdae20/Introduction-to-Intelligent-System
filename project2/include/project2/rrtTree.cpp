@@ -179,7 +179,7 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
-    for(i=0;i<K;i++){
+    for(int i=0;i<K;i++){
         point x_rand = randomState(x_max,x_min,y_max,y_min);
         double out[5];
         int x_near = nearestNeighbor(x_rand, MaxStep);

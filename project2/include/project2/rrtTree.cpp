@@ -260,7 +260,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     out[3] = alpha_array[min_distance_idx];
     out[4] = d_array[min_distance_idx];
 
-    return (int)isCollision(x_near, sample_point[min_distance_idx], d_array[min_distance_idx], L / tan(fabs(alpha_array[i])));
+    return (int)isCollision(x_near, sample_point[min_distance_idx], d_array[min_distance_idx], L / tan(fabs(alpha_array[min_distance_idx])));
 }
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
@@ -293,12 +293,12 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
 
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
-    node current_node = ptrTable[nearestNeighbor(this->x_goal)];
+    node current_node = *ptrTable[nearestNeighbor(this->x_goal)];
     std::vector<traj> path;
-    while(currnet_node != this->x_init){
+    while(current_node != this->x_init){
         traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
         path.push_back(current_node_traj);
-        current_node_traj = ptrTable[nearestNeighbor(current_node.idx_parent)];
+        current_node = *ptrTable[current_node.idx_parent];
     }
     return path;
 }

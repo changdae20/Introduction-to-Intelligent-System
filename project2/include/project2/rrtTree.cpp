@@ -234,8 +234,9 @@ int rrtTree::nearestNeighbor(point x_rand) {
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO
     int sample_size = 30;
-    double[30] d_array; alpha_array;
-    point[30] sample_point;
+    double d_array[30]; 
+    double alpha_array[30];
+    point sample_point[30];
     int min_distance_idx = 0;
     for(int i=0; i<30; i++){
         d_array[i] = randomState(MaxStep,0,0,0).x;

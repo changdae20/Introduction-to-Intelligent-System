@@ -183,7 +183,7 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
         point x_rand = randomState(x_max,x_min,y_max,y_min);
         double out[5];
         int x_near = nearestNeighbor(x_rand, MaxStep);
-        int valid = randompath(out, ptrTable[x_near], x_rand, MaxStep);
+        int valid = randompath(out, ptrTable[x_near]->location, x_rand, MaxStep);
         if(valid == 1){
             point x_new;
             x_new.x = out[0];

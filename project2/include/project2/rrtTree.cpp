@@ -1,7 +1,6 @@
 #include "rrtTree.h"
 #include <unistd.h>
 #include <ros/ros.h>
-#include <stdlib.h>
 #define PI 3.14159265358979323846
 
 double max_alpha = 0.2;

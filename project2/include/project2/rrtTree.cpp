@@ -221,6 +221,33 @@ int rrtTree::nearestNeighbor(point x_rand) {
 
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO
+    int sample_size = 30;
+    double[30] d_array; alpha_array;
+    point[30] sample_point;
+    int min_distance_idx = 0;
+    for(int i=0; i<30; i++){
+        d_array[i] = randomState(MaxStep,0,0,0).x;
+        alpha_array[i] = randomState(max_alpha,-max_alpha,0,0).x;
+        double radius = L / tan(fabs(alpha_array[i]));
+        double beta = d_array[i] / radius;
+        sample_point[i].x = x_near.x - radius*sin(x_near.th) + radius*sin(x_near.th + beta);
+        sample_point[i].x = x_near.x + radius*cos(x_near.th) - radius*cos(x_near.th + beta);
+        sample_point[i].th = x_near.th + beta;
+    }
+    double min_distance = distance(x_rand,sample_point[0]);
+    for(int i=1; i<30; i++){
+        if(distance(x_rand,sample_point[i])<min_distance){
+            min_distance = distance(x_rand,sample_point[i]);
+            min_distance_idx = i;
+        }
+    }
+    out[0] = sample_point[min_distance_idx].x;
+    out[1] = sample_point[min_distance_idx].y;
+    out[2] = sample_point[min_distance_idx].th;
+    out[3] = alpha_array[min_distance_idx];
+    out[4] = d_array[min_distance_idx];
+
+    return (int)isCollision(x_near, sample_point[min_distance_idx], d_array[min_distance_idx], L / tan(fabs(alpha_array[i])));
 }
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
@@ -247,10 +274,10 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
 
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
-    struct node current_node = ptrTable[nearestNeighbor(this->x_goal)];
+    node current_node = ptrTable[nearestNeighbor(this->x_goal)];
     std::vector<traj> path;
     while(currnet_node != this->x_init){
-        struct traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
+        traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
         path.push_back(current_node_traj);
         current_node_traj = ptrTable[nearestNeighbor(current_node.idx_parent)];
     }

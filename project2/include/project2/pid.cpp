@@ -12,7 +12,7 @@ PID::PID(){
      *
     */
 
-    float ctrl_rate = 10;
+    float ctrl_rate = 60;
     error = 0;
     error_sum = 0;
     error_diff = 0;

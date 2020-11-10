@@ -30,7 +30,7 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 15;
+int margin = 20;
 int K = 10000;
 double MaxStep = 4;
 
@@ -267,11 +267,11 @@ int main(int argc, char** argv){
         
         printf("steering angle : %f, Error : %f\n",ctrl_value, pid_ctrl.error);
         //setcmdvel(0.3, ctrl_value);
-        setcmdvel(path_RRT[look_ahead_idx].d/4,ctrl_value);
+        setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
         cmd_vel_pub.publish(cmd);
         ros::spinOnce();
         control_rate.sleep();
-        if(hypot(robot_pose.x - path_RRT[look_ahead_idx].x,robot_pose.y - path_RRT[look_ahead_idx].y)<0.4){
+        if(hypot(robot_pose.x - path_RRT[look_ahead_idx].x,robot_pose.y - path_RRT[look_ahead_idx].y)<0.5){
             look_ahead_idx++;
             pid_ctrl.reset();
         }
@@ -317,7 +317,19 @@ void generate_path_RRT()
         printf("After calling generateRRT\n");
         std::vector<traj> path_to_waypoint = Tree.backtracking_traj();
         printf("Setting path_to_waypoint\n");
-        for(int j=0; j<path_to_waypoint.size(); j++) path_RRT.push_back(path_to_waypoint[path_to_waypoint.size()-j-1]);
+        for(int j=0; j<path_to_waypoint.size(); j++){
+            path_RRT.push_back(path_to_waypoint[path_to_waypoint.size()-j-1]);
+            printf("th value is %f \n",path_to_waypoint[path_to_waypoint.size()-j-1].th);
+        }
+        waypoints[i+1].th = path_to_waypoint[0].th;
+        
+        traj waypoint;
+        waypoint.x = waypoints[i+1].x;
+        waypoint.y = waypoints[i+1].y;
+        waypoint.th = waypoints[i+1].th;
+        waypoint.d = 0.325;
+        waypoint.alpha = 0;
+        path_RRT.push_back(waypoint);
         printf("End of for loop in generate_path_RRT\n");
     }
 
@@ -338,7 +350,7 @@ void set_waypoints()
     waypoint_candid[3].th = 0.0;
 
     int order[] = {3,1,2,3};
-    int order_size = 2;
+    int order_size = 4;
 
     for(int i = 0; i < order_size; i++){
         waypoints.push_back(waypoint_candid[order[i]]);

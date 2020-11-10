@@ -253,7 +253,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     int min_distance_idx = 0;
     //printf("before for loop in randompath\n");
     for(int i=0; i<sample_size; i++){
-        d_array[i] = MaxStep*rand()/RAND_MAX;
+        d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
         alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
         //printf("%dth sample path, d_array[%d] : %f, alpha_array[%d] : %f\n",i,i,d_array[i],i,alpha_array[i]);
         double radius = L / tan(alpha_array[i]);

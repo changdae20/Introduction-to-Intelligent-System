@@ -43,8 +43,9 @@ private:
     bool isCollision(point x1, point x2, double d, double R);
     point randomState(double x_max, double x_min, double y_max, double y_min);
     int randompath(double *out, point x_near, point x_rand, double MaxStep);
-    double distance(point, point);
-    double thetaModulo(double, double);
+    static double distance(point, point);
+    static bool isCol(point, point, double, double);
+    static double thetaModulo(double, double);
 
 public:
     rrtTree();

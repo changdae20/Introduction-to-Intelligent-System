@@ -310,6 +310,10 @@ double rrtTree::distance(point p1, point p2) {
     return hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
+bool rrtTree::isCol(point x1, point x2, double d, double R) {
+    return isCollision(x1, x2, d, R);
+}
+
 double rrtTree::thetaModulo(double th1, double th2) {
     return -M_PI + fmod(3 * M_PI + th1 + th2, 2 * M_PI);
 }

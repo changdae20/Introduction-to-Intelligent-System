@@ -311,7 +311,6 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
         if (map.at<uchar>(i, j) < 125) return true;
     }
 
-    return false;
 }
 
 std::vector<traj> rrtTree::backtracking_traj(){

@@ -97,12 +97,9 @@ int main(int argc, char** argv){
 
     // Set Way Points
     set_waypoints();
-    printf("Set way pointsssssss\n");
-    printf("Set way pointsssssss\n");
-    printf("Set way pointsssssss\n");
+    printf("Set way points\n");
     printf("size of waypoints :%d", waypoints.size());
     // RRT
-    printf("Before generate RRT\n");
     generate_path_RRT();
     printf("Generate RRT\n");
 
@@ -250,11 +247,6 @@ int main(int argc, char** argv){
 		5. if robot reach the final goal
 			finish RUNNING (state = FINISH)
 	    */
-        //ros::spinOnce();
-        //ros::Rate(0.5).sleep();
-        
-        //while(ros::ok()){
-        //callback_state(model_states);
         point goal;
         goal.x = path_RRT[look_ahead_idx].x;
         goal.y = path_RRT[look_ahead_idx].y;
@@ -305,22 +297,14 @@ void generate_path_RRT()
      * 4.  when you store path, you have to reverse the order of points in the generated path since BACKTRACKING makes a path in a reverse order (goal -> start).
      * 5. end
      */
-    //printf("Start generate_path_RRT\n");
     int size = waypoints.size();
     //printf("Start generate_path_RRT, waypoints.size() : %d\n", size);
-    for(int i=0; i<size-1;i++){
-        //printf("The start of for loop, i :%d\n", i);
-        rrtTree Tree = rrtTree(waypoints[i],waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
-
-        // rrtTree::rrtTree(point x_init, point x_goal, cv::Mat map, double map_origin_x, double map_origin_y, double res, int margin)
-        //printf("After calling constructor of rrtTree\n");
-        Tree.generateRRT(world_x_max,world_x_min,world_y_max,world_y_min,K,MaxStep);
-        //printf("After calling generateRRT\n");
+    for(int i = 0; i < size-1; i++){
+        rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
+        Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
         std::vector<traj> path_to_waypoint = Tree.backtracking_traj();
-        //printf("Setting path_to_waypoint\n");
-        for(int j=0; j<path_to_waypoint.size(); j++){
+        for(int j = 0; j < path_to_waypoint.size(); j++){
             path_RRT.push_back(path_to_waypoint[path_to_waypoint.size()-j-1]);
-            //printf("th value is %f \n",path_to_waypoint[path_to_waypoint.size()-j-1].th);
         }
         waypoints[i+1].th = path_to_waypoint[0].th;
         

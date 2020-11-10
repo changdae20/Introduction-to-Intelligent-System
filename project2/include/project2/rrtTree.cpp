@@ -178,9 +178,6 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
-
-    //printf("The start of generateRRT in rrtTree class\n");
-    //for(int i=0;i<K;i++){
     while(count < K){
         point x_rand = randomState(x_max,x_min,y_max,y_min);
         double out[5];
@@ -194,25 +191,18 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
             addVertex(x_new, x_rand, x_near, out[3], out[4]);
         }
     }
-    //printf("before\n");
     //visualizeTree();
-    //printf("after\n");
-    //getchar();
-    //visualizeTree();
-    //getchar();
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
     //TODO
-    //printf("The start of randomState function\n");
- 
     double x_rand = x_min + (x_max-x_min)*rand()/RAND_MAX;
     double y_rand = y_min + (y_max-y_min)*rand()/RAND_MAX;
     
     point newpoint;
     newpoint.x = x_rand;
     newpoint.y = y_rand;
-    //printf("The end of randomState function\n");
+
     return newpoint;
 }
 
@@ -245,13 +235,11 @@ int rrtTree::nearestNeighbor(point x_rand) {
 
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO
-    //printf("The start of randompath function\n");
     int sample_size = 100;
     double d_array[100]; 
     double alpha_array[100];
     point sample_point[100];
     int min_distance_idx = 0;
-    //printf("before for loop in randompath\n");
     for(int i=0; i<sample_size; i++){
         d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
         //d_array[i]=L;
@@ -297,9 +285,9 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
 
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
-    node current_node = *ptrTable[nearestNeighbor(this->x_goal)];
+    node current_node = *ptrTable[nearestNeighbor(x_goal)];
     std::vector<traj> path;
-    while((current_node.location.x != this->x_init.x) || (current_node.location.y != this->x_init.y) || (current_node.location.th != this->x_init.th)) {
+    while(current_node.location != x_init) {
         traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
         path.push_back(current_node_traj);
         current_node = *ptrTable[current_node.idx_parent];

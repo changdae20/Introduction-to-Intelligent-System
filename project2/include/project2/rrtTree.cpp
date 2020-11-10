@@ -3,7 +3,7 @@
 #include <ros/ros.h>
 #define PI 3.14159265358979323846
 
-double max_alpha = 0.2;
+double max_alpha = 0.16;
 double L = 0.325;
 
 rrtTree::rrtTree() {
@@ -191,7 +191,11 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
             addVertex(x_new, x_rand, x_near, out[3], out[4]);
         }
     }
+
     //visualizeTree();
+    //getchar();
+    //visualizeTree();
+    //getchar();
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
@@ -209,7 +213,6 @@ point rrtTree::randomState(double x_max, double x_min, double y_max, double y_mi
 int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     //TODO
     double max_beta = MaxStep * tan(max_alpha) / L;
-    //printf("max_beta : %f\n",max_beta);
     int min_idx = 0;
     for (int i = 1; i < count; ++i) {
         float relative_angle = atan2(x_rand.y - ptrTable[i]->location.y, x_rand.x - ptrTable[i]->location.x);
@@ -242,9 +245,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     int min_distance_idx = 0;
     for(int i=0; i<sample_size; i++){
         d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
-        //d_array[i]=L;
         alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
-        //printf("%dth sample path, d_array[%d] : %f, alpha_array[%d] : %f\n",i,i,d_array[i],i,alpha_array[i]);
         double radius = L / tan(alpha_array[i]);
         double beta = d_array[i] / radius;
         sample_point[i].x = x_near.x - radius*sin(x_near.th) + radius*sin(x_near.th + beta);

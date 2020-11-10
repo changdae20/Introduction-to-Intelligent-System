@@ -97,11 +97,8 @@ int main(int argc, char** argv){
 
     // Set Way Points
     set_waypoints();
-    printf("Set way points\n");
-    printf("size of waypoints :%d", waypoints.size());
     // RRT
     generate_path_RRT();
-    printf("Generate RRT\n");
 
     // FSM
     state = INIT;
@@ -235,7 +232,6 @@ int main(int argc, char** argv){
         } break;
 
         case RUNNING: {
-        printf("start of case RUNNING, look_ahead_idx : %d\n",look_ahead_idx);
 	    //TODO
 	    /*
 		1. make control following point in the variable "path_RRT"
@@ -251,26 +247,22 @@ int main(int argc, char** argv){
         goal.x = path_RRT[look_ahead_idx].x;
         goal.y = path_RRT[look_ahead_idx].y;
         goal.th = path_RRT[look_ahead_idx].th;
-        printf("Current position : (%f, %f), Goal position : (%f, %f)\n",robot_pose.x,robot_pose.y,goal.x,goal.y);
         float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
         float max_steering = 0.4;
         if (fabs(ctrl_value) > max_steering)
             ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
         
-        printf("steering angle : %f, Error : %f\n",ctrl_value, pid_ctrl.error);
-        //setcmdvel(1.0, ctrl_value);
-        setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
+        //setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
+        setcmdvel(1.0,ctrl_value);
         cmd_vel_pub.publish(cmd);
         ros::spinOnce();
         control_rate.sleep();
-        if(hypot(robot_pose.x - path_RRT[look_ahead_idx].x,robot_pose.y - path_RRT[look_ahead_idx].y)<0.5){
+        if(hypot(robot_pose.x - path_RRT[look_ahead_idx].x,robot_pose.y - path_RRT[look_ahead_idx].y)<(look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) && look_ahead_idx < path_RRT.size()){
             look_ahead_idx++;
             pid_ctrl.reset();
         }
-        //if(look_ahead_idx == path_RRT.size()) state = FINISH;
-        if(hypot(robot_pose.x - path_RRT[path_RRT.size()-1].x,robot_pose.y - path_RRT[path_RRT.size()-1].y)<0.1 && look_ahead_idx == path_RRT.size()) state = FINISH;
-        //}
-        //state = FINISH;
+        if(look_ahead_idx == path_RRT.size()) state = FINISH;
+        
         } break;
 
         case FINISH: {
@@ -298,7 +290,6 @@ void generate_path_RRT()
      * 5. end
      */
     int size = waypoints.size();
-    //printf("Start generate_path_RRT, waypoints.size() : %d\n", size);
     for(int i = 0; i < size-1; i++){
         rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
         Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
@@ -315,10 +306,12 @@ void generate_path_RRT()
         waypoint.d = 0.325;
         waypoint.alpha = 0;
         path_RRT.push_back(waypoint);
-        //printf("End of for loop in generate_path_RRT\n");
+        Tree.visualizeTree(path_RRT);
+        getchar();
+        Tree.visualizeTree(path_RRT);
+        getchar();
     }
 
-    //printf("End of generate_path_RRT\n");
 }
 
 void set_waypoints()
@@ -334,8 +327,8 @@ void set_waypoints()
     waypoint_candid[3].y = 7.0;
     waypoint_candid[3].th = 0.0;
 
-    int order[] = {3,1,2,1,2,3};
-    int order_size = 6;
+    int order[] = {3,1,2,3};
+    int order_size = 4;
 
     for(int i = 0; i < order_size; i++){
         waypoints.push_back(waypoint_candid[order[i]]);

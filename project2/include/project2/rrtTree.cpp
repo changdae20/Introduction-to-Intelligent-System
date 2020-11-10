@@ -269,8 +269,8 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
 
 bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     //TODO
-    double x_c = x1.x - R*sin(x1.th);
-    double y_c = x1.y + R*cos(x1.th);
+    double x_c = x1.x - R * sin(x1.th);
+    double y_c = x1.y + R * cos(x1.th);
     double beta = d / R;
     double dbeta = res / R;
     for (int i = 1; i < d / res; ++i) {
@@ -282,6 +282,23 @@ bool rrtTree::isCollision(point x1, point x2, double d, double R) {
     }
     return false;
 }
+
+bool rrtTree::isCollision(traj x1, traj x2, double d, double R) {
+    //TODO
+    double x_c = x1.x - R * sin(x1.th);
+    double y_c = x1.y + R * cos(x1.th);
+    double beta = d / R;
+    double dbeta = res / R;
+    for (int i = 1; i < d / res; ++i) {
+        double x_temp = x_c + R * sin(x1.th + dbeta * i);
+        double y_temp = y_c - R * cos(x1.th + dbeta * i);
+        int i1_temp = x_temp / res + map_origin_x;
+        int j1_temp = y_temp / res + map_origin_y;
+        if (map.at<uchar>(i1_temp, j1_temp) < 125) return true;
+    }
+    return false;
+}
+
 
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
@@ -299,8 +316,8 @@ double rrtTree::distance(point p1, point p2) {
     return hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
-bool rrtTree::isCol(point x1, point x2, double d, double R) {
-    return rrtTree().isCollision(x1, x2, d, R);
+double rrtTree::distance(traj p1, traj p2) {
+    return hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
 double rrtTree::thetaModulo(double th1, double th2) {

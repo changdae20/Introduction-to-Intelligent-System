@@ -98,7 +98,7 @@ int main(int argc, char** argv){
     // Set Way Points
     set_waypoints();
     printf("Set way points\n");
-    printf("size of waypoints :%d", waypoints.size());
+    printf("size of waypoints :%d\n", waypoints.size());
     // RRT
     generate_path_RRT();
     printf("Generate RRT\n");

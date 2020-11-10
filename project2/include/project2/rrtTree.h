@@ -43,9 +43,6 @@ private:
     bool isCollision(point x1, point x2, double d, double R);
     point randomState(double x_max, double x_min, double y_max, double y_min);
     int randompath(double *out, point x_near, point x_rand, double MaxStep);
-    static double distance(point, point);
-    static bool isCol(point, point, double, double);
-    static double thetaModulo(double, double);
 
 public:
     rrtTree();
@@ -57,4 +54,9 @@ public:
     void visualizeTree(std::vector<traj> path);
     int generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep);
     std::vector<traj> backtracking_traj();
+
+    bool isCollision(traj x1, traj x2, double d, double R);
+    static double distance(point, point);
+    static double distance(traj, traj);
+    static double thetaModulo(double, double);
 };

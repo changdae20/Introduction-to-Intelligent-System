@@ -190,11 +190,6 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
             addVertex(x_new, x_rand, x_near, out[3], out[4]);
         }
     }
-
-    //visualizeTree();
-    //getchar();
-    //visualizeTree();
-    //getchar();
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
@@ -242,7 +237,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     double alpha_array[sample_size];
     point sample_point[sample_size];
     int min_distance_idx = 0;
-    for(int i=0; i<sample_size; i++){
+    for(int i=0; i<sample_size; i++) {
         d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
         alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
         double radius = L / tan(alpha_array[i]);
@@ -252,9 +247,9 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
         sample_point[i].th = thetaModulo(x_near.th , beta);
     }
     double min_distance = distance(x_rand,sample_point[0]);
-    for(int i=1; i<sample_size; i++){
-        if(distance(x_rand,sample_point[i])<min_distance ){
-            min_distance = distance(x_rand,sample_point[i]);
+    for(int i=1; i<sample_size; i++) {
+        if(distance(x_rand,sample_point[i]) < min_distance ) {
+            min_distance = distance(x_rand, sample_point[i]);
             min_distance_idx = i;
         }
     }
@@ -303,7 +298,7 @@ bool rrtTree::isCollision(traj x1, traj x2, double d, double R) {
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
     std::vector<traj> path;
-    for (auto current_node = *ptrTable[nearestNeighbor(x_goal)]; current_node.location != x_init; current_node = *ptrTable[current_node.idx_parent]) {
+    for (node current_node = *ptrTable[nearestNeighbor(x_goal)]; current_node.location != x_init; current_node = *ptrTable[current_node.idx_parent]) {
         traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
         path.push_back(current_node_traj);
     }

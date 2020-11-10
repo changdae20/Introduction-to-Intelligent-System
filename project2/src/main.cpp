@@ -296,21 +296,86 @@ void generate_path_RRT()
     for(int i = 0; i < size-1; i++) {
         rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
         Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
-        std::vector<traj> path_to_waypoint = Tree.backtracking_traj();
-        path_to_waypoint.push_back(waypoints[i]);
-        waypoints[i+1].th = path_to_waypoint[0].th;
+        std::vector<traj> tmp = Tree.backtracking_traj();
+        Tree.visualizeTree(tmp);
+        Tree.visualizeTree(tmp);
+        getchar();
+
+        traj waypoint;
+        waypoint.x = waypoints[i].x;
+        waypoint.y = waypoints[i].y;
+        waypoint.th = waypoints[i].th;
+        waypoint.d = 0.325;
+        waypoint.alpha = 0;
+        tmp.push_back(waypoint);
+
+        waypoints[i+1].th = tmp[0].th;
+        waypoint.x = waypoints[i+1].x;
+        waypoint.y = waypoints[i+1].y;
+        waypoint.th = waypoints[i+1].th;
+
+        std::vector<traj> path_to_waypoint;
+        path_to_waypoint.push_back(waypoint);
+        for (int j = 0; j < tmp.size(); ++j)
+            path_to_waypoint.push_back(tmp[j]);
+
+        std::vector<traj> filtered_path;
+        filtered_path.push_back(path_to_waypoint.back());
+        path_to_waypoint.pop_back();
+        filtered_path.push_back(path_to_waypoint.back());
+        path_to_waypoint.pop_back();
+        while (!path_to_waypoint.empty()) {
+            traj p2 = filtered_path.back();
+            filtered_path.pop_back();
+            traj p1 = filtered_path.back();
+            filtered_path.pop_back();
+            traj p3 = path_to_waypoint.back();
+            path_to_waypoint.pop_back();
+            double beta = rrtTree::thetaModulo(p3.th, -p1.th);
+            double dist = rrtTree::distance(p3, p1);
+            double R = dist / (2 * sin(beta / 2));
+            if (Tree.isCollision(p1, p3, R * beta, R)) {
+                filtered_path.push_back(p1);
+                filtered_path.push_back(p2);
+                filtered_path.push_back(p3);
+            } else {
+                p3.d = R * beta;
+                p3.alpha = beta;
+                filtered_path.push_back(p1);
+                filtered_path.push_back(p3);
+            }
+        }
+        path_to_waypoint.push_back(filtered_path.back());
+        filtered_path.pop_back();
+        while (!filtered_path.empty()) {
+            traj p1 = filtered_path.back();
+            traj p2 = path_to_waypoint.back();
+            path_to_waypoint.pop_back();
+            double beta = rrtTree::thetaModulo(p2.th, -p1.th);
+            double dist = rrtTree::distance(p2, p1);
+            double R = dist / (2 * sin(beta / 2));
+            double x_c = p1.x - R * sin(p1.th);
+            double y_c = p1.y + R * cos(p1.th);
+            double L = 0.325;
+            double dbeta = L / R;
+            p2.d = R * dbeta;
+            path_to_waypoint.push_back(p2);
+            for (int i = R * beta / L - 1; i > 0; --i) {
+                double x = x_c + R * sin(p1.th + dbeta * i);
+                double y = y_c - R * cos(p1.th + dbeta * i);
+                traj p{x, y, p1.th + dbeta * i, R * dbeta, p2.alpha};
+                if (i == (int)(R * beta / L) - 1)
+                    p.d = p2.d - R * dbeta * i;
+                path_to_waypoint.push_back(p);
+            }
+            path_to_waypoint.push_back(p1);
+            filtered_path.pop_back();
+        }
+
         while (!path_to_waypoint.empty()) {
             path_RRT.push_back(path_to_waypoint.back());
             path_to_waypoint.pop_back();
         }
-        
-        traj waypoint;
-        waypoint.x = waypoints[i+1].x;
-        waypoint.y = waypoints[i+1].y;
-        waypoint.th = waypoints[i+1].th;
-        waypoint.d = 0.325;
-        waypoint.alpha = 0;
-        path_RRT.push_back(waypoint);
     }
 
 }

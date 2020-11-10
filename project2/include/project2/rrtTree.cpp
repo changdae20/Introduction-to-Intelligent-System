@@ -179,7 +179,7 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
 
-    printf("The start of generateRRT in rrtTree class\n");
+    //printf("The start of generateRRT in rrtTree class\n");
     //for(int i=0;i<K;i++){
     while(count < K){
         point x_rand = randomState(x_max,x_min,y_max,y_min);
@@ -194,12 +194,12 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
             addVertex(x_new, x_rand, x_near, out[3], out[4]);
         }
     }
-    printf("before\n");
-    visualizeTree();
-    printf("after\n");
-    getchar();
-    visualizeTree();
-    getchar();
+    //printf("before\n");
+    //visualizeTree();
+    //printf("after\n");
+    //getchar();
+    //visualizeTree();
+    //getchar();
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
@@ -254,6 +254,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     //printf("before for loop in randompath\n");
     for(int i=0; i<sample_size; i++){
         d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
+        //d_array[i]=L;
         alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
         //printf("%dth sample path, d_array[%d] : %f, alpha_array[%d] : %f\n",i,i,d_array[i],i,alpha_array[i]);
         double radius = L / tan(alpha_array[i]);

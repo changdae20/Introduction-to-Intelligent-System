@@ -58,5 +58,6 @@ public:
     bool isCollision(traj x1, traj x2, double d, double R);
     static double distance(point, point);
     static double distance(traj, traj);
+    static double distance(traj, point);
     static double thetaModulo(double, double);
 };

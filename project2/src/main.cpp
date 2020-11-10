@@ -30,7 +30,7 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 20;
+int margin = 18;
 int K = 10000;
 double MaxStep = 2;
 

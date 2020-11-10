@@ -312,7 +312,7 @@ double rrtTree::distance(point p1, point p2) {
 }
 
 bool rrtTree::isCol(point x1, point x2, double d, double R) {
-    return isCollision(x1, x2, d, R);
+    return rrtTree().isCollision(x1, x2, d, R);
 }
 
 double rrtTree::thetaModulo(double th1, double th2) {

@@ -306,10 +306,6 @@ void generate_path_RRT()
         waypoint.d = 0.325;
         waypoint.alpha = 0;
         path_RRT.push_back(waypoint);
-        Tree.visualizeTree(path_RRT);
-        getchar();
-        Tree.visualizeTree(path_RRT);
-        getchar();
     }
 
 }

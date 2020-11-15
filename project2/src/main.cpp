@@ -297,7 +297,7 @@ void generate_path_RRT()
         rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
         Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
         std::vector<traj> path_to_waypoint = Tree.backtracking_traj();
-        path_to_waypoint.push_back(waypoints[i]);
+        // path_to_waypoint.push_back(waypoints[i]);
         waypoints[i+1].th = path_to_waypoint[0].th;
         while (!path_to_waypoint.empty()) {
             path_RRT.push_back(path_to_waypoint.back());
@@ -311,6 +311,9 @@ void generate_path_RRT()
         waypoint.d = 0.325;
         waypoint.alpha = 0;
         path_RRT.push_back(waypoint);
+        Tree.visualizeTree(path_RRT);
+        Tree.visualizeTree(path_RRT);
+        getchar();
     }
 
 }

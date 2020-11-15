@@ -252,8 +252,14 @@ int main(int argc, char** argv){
             goal.th = path_RRT[look_ahead_idx].th;
             float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
             float max_steering = 0.3;
+            if (look_ahead_idx > 0) {
+                printf("th, goal_th: %f, %f\n", path_RRT[look_ahead_idx-1].th, path_RRT[look_ahead_idx].th);
+                printf("beta: %f\n", rrtTree::thetaModulo(-path_RRT[look_ahead_idx-1].th, path_RRT[look_ahead_idx].th));
+            }
+            printf("steering before max: %f\n", ctrl_value);
             if (fabs(ctrl_value) > max_steering)
                 ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
+            printf("steering: %f\n", ctrl_value);
             
             //setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
             setcmdvel(1.0, ctrl_value);
@@ -297,9 +303,6 @@ void generate_path_RRT()
         rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
         Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
         std::vector<traj> tmp = Tree.backtracking_traj();
-        Tree.visualizeTree(tmp);
-        Tree.visualizeTree(tmp);
-        getchar();
 
         traj waypoint;
         waypoint.x = waypoints[i].x;
@@ -345,37 +348,42 @@ void generate_path_RRT()
                 filtered_path.push_back(p3);
             }
         }
-        path_to_waypoint.push_back(filtered_path.back());
-        filtered_path.pop_back();
-        while (!filtered_path.empty()) {
-            traj p1 = filtered_path.back();
-            traj p2 = path_to_waypoint.back();
-            path_to_waypoint.pop_back();
-            double beta = rrtTree::thetaModulo(p2.th, -p1.th);
-            double dist = rrtTree::distance(p2, p1);
-            double R = dist / (2 * sin(beta / 2));
-            double x_c = p1.x - R * sin(p1.th);
-            double y_c = p1.y + R * cos(p1.th);
-            double L = 0.325;
-            double dbeta = L / R;
-            p2.d = R * dbeta;
-            path_to_waypoint.push_back(p2);
-            for (int i = R * beta / L - 1; i > 0; --i) {
-                double x = x_c + R * sin(p1.th + dbeta * i);
-                double y = y_c - R * cos(p1.th + dbeta * i);
-                traj p{x, y, p1.th + dbeta * i, R * dbeta, p2.alpha};
-                if (i == (int)(R * beta / L) - 1)
-                    p.d = p2.d - R * dbeta * i;
-                path_to_waypoint.push_back(p);
-            }
-            path_to_waypoint.push_back(p1);
-            filtered_path.pop_back();
-        }
+        // path_to_waypoint.push_back(filtered_path.back());
+        // filtered_path.pop_back();
+        // while (!filtered_path.empty()) {
+        //     traj p1 = filtered_path.back();
+        //     traj p2 = path_to_waypoint.back();
+        //     path_to_waypoint.pop_back();
+        //     double beta = rrtTree::thetaModulo(p2.th, -p1.th);
+        //     double dist = rrtTree::distance(p2, p1);
+        //     double R = dist / (2 * sin(beta / 2));
+        //     double x_c = p1.x - R * sin(p1.th);
+        //     double y_c = p1.y + R * cos(p1.th);
+        //     double L = 0.325;
+        //     double dbeta = L / R;
+        //     p2.d = R * dbeta;
+        //     path_to_waypoint.push_back(p2);
+        //     for (int i = R * beta / L - 1; i > 0; --i) {
+        //         double x = x_c + R * sin(p1.th + dbeta * i);
+        //         double y = y_c - R * cos(p1.th + dbeta * i);
+        //         traj p{x, y, p1.th + dbeta * i, R * dbeta, p2.alpha};
+        //         if (i == (int)(R * beta / L) - 1)
+        //             p.d = p2.d - R * dbeta * i;
+        //         path_to_waypoint.push_back(p);
+        //     }
+        //     path_to_waypoint.push_back(p1);
+        //     filtered_path.pop_back();
+        // }
 
-        while (!path_to_waypoint.empty()) {
-            path_RRT.push_back(path_to_waypoint.back());
-            path_to_waypoint.pop_back();
-        }
+        // while (!path_to_waypoint.empty()) {
+        //     path_RRT.push_back(path_to_waypoint.back());
+        //     path_to_waypoint.pop_back();
+        // }
+        Tree.visualizeTree(filtered_path);
+        Tree.visualizeTree(filtered_path);
+        getchar();
+        for (size_t i = 0; i < filtered_path.size(); ++i)
+            path_RRT.push_back(filtered_path[i]);
     }
 
 }

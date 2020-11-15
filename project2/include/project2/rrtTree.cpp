@@ -245,6 +245,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
         sample_point[i].x = x_near.x - radius*sin(x_near.th) + radius*sin(x_near.th + beta);
         sample_point[i].y = x_near.y + radius*cos(x_near.th) - radius*cos(x_near.th + beta);
         sample_point[i].th = thetaModulo(x_near.th , beta);
+        // last point should be the x_goal when x_rand is x-goal
     }
     double min_distance = distance(x_rand,sample_point[0]);
     for(int i=1; i<sample_size; i++) {

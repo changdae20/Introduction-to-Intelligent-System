@@ -16,7 +16,7 @@ PID::PID(){
     error = 0;
     error_sum = 0;
     error_diff = 0;
-    Kp = 1;
+    Kp = 0.8;
     Ki = 0.001;
     Kd = 0.1;
 

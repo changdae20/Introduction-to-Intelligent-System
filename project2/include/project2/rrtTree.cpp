@@ -57,7 +57,7 @@ cv::Mat rrtTree::addMargin(cv::Mat map, int margin) {
     cv::Mat map_margin = map.clone();
     int xSize = map.cols;
     int ySize = map.rows;
-    printf("(xSize, ySize) : (%d, %d)\n",xSize,ySize);
+    // printf("(xSize, ySize) : (%d, %d)\n",xSize,ySize);
 
 
     for (int i = 0; i < ySize; i++) {
@@ -118,15 +118,15 @@ void rrtTree::visualizeTree(std::vector<traj> path){
     double Res = 2;
     double radius = 6;
     cv::Point x1, x2;
-    printf("o\n");
+    // printf("o\n");
     cv::Mat map_c;
     cv::Mat imgResult;
     cv::cvtColor(this->map, map_c, CV_GRAY2BGR);
     cv::resize(map_c, imgResult, cv::Size(), Res, Res);
-    printf("o\n");
+    // printf("o\n");
     cv::circle(imgResult, cv::Point((int)(Res*(path[0].y/res + map_origin_y)), (int)(Res*(path[0].x/res + map_origin_x))), radius, cv::Scalar(0, 0, 255), CV_FILLED);
     cv::circle(imgResult, cv::Point((int)(Res*(path[path.size()-1].y/res + map_origin_y)), (int)(Res*(path[path.size()-1].x/res + map_origin_x))), radius, cv::Scalar(0, 0, 255), CV_FILLED);
-    printf("o\n");
+    // printf("o\n");
     for(int i = 1; i < this->count; i++) {
         idx_parent = this->ptrTable[i]->idx_parent;
 	    for(int j = 0; j < 10; j++) {
@@ -143,7 +143,7 @@ void rrtTree::visualizeTree(std::vector<traj> path){
             cv::line(imgResult, x1, x2, cv::Scalar(255, 0, 0), thickness, lineType);
 	    }
     }
-    printf("o\n");
+    // printf("o\n");
     thickness = 3;
     for(int i = 1; i < path.size(); i++) {
 	    for(int j = 0; j < 10; j++) {
@@ -157,21 +157,21 @@ void rrtTree::visualizeTree(std::vector<traj> path){
 	        double p2_y = path[i-1].y + L/tan(alpha)*(cos(path[i-1].th) - cos(p2_th));
             x1 = cv::Point((int)(Res*(p1_y/res + map_origin_y)), (int)(Res*(p1_x/res + map_origin_x)));
             x2 = cv::Point((int)(Res*(p2_y/res + map_origin_y)), (int)(Res*(p2_x/res + map_origin_x)));
-            printf("%d\n",(int)(Res*(p1_y/res + map_origin_y)));
-            printf("%d\n",(int)(Res*(p1_x/res + map_origin_x)));
-            printf("%d\n",(int)(Res*(p2_y/res + map_origin_y)));
-            printf("%d\n",(int)(Res*(p2_x/res + map_origin_x)));
+            // printf("%d\n",(int)(Res*(p1_y/res + map_origin_y)));
+            // printf("%d\n",(int)(Res*(p1_x/res + map_origin_x)));
+            // printf("%d\n",(int)(Res*(p2_y/res + map_origin_y)));
+            // printf("%d\n",(int)(Res*(p2_x/res + map_origin_x)));
             cv::line(imgResult, x1, x2, cv::Scalar(255, 0, 0), thickness, lineType);
 	    }
     }
-    printf("o\n");
+    // printf("o\n");
     cv::namedWindow("Mapping");
-    printf("i\n");
+    // printf("i\n");
     //cv::Rect imgROI((int)Res*200,(int)Res*200,(int)Res*400,(int)Res*400);
     cv::Rect imgROI((int)Res*0,(int)Res*0,(int)Res*540,(int)Res*179);
-    printf("i\n");
+    // printf("i\n");
     cv::imshow("Mapping", imgResult(imgROI));
-    printf("i\n");
+    // printf("i\n");
     cv::waitKey(1);
 }
 
@@ -314,12 +314,12 @@ bool rrtTree::isCollision(traj x1, traj x2, double d, double R) {
 std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
     std::vector<traj> path;
-    printf("called backtracking, path.empty() : %d \n", path.empty());
+    // printf("called backtracking, path.empty() : %d \n", path.empty());
     for (node current_node = *ptrTable[nearestNeighbor(x_goal)]; current_node.location != x_init; current_node = *ptrTable[current_node.idx_parent]) {
         traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
         path.push_back(current_node_traj);
     }
-    printf("returning backtracking, path.empty() : %d \n", path.empty());
+    // printf("returning backtracking, path.empty() : %d \n", path.empty());
     return path;
 }
 

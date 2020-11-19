@@ -233,27 +233,26 @@ int main(int argc, char** argv){
             } break;
 
             case RUNNING: {
-	        //TODO
-            point goal;
-            goal.x = path_RRT[look_ahead_idx].x;
-            goal.y = path_RRT[look_ahead_idx].y;
-            goal.th = path_RRT[look_ahead_idx].th;
-            float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
-            float max_steering = 0.3;
-            if (fabs(ctrl_value) > max_steering)
-                ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
-            
-            //setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
-            setcmdvel(1.0, ctrl_value);
-            cmd_vel_pub.publish(cmd);
-            ros::spinOnce();
-            control_rate.sleep();
-            if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
-                && look_ahead_idx < path_RRT.size()) {
-                look_ahead_idx++;
-                pid_ctrl.reset();
-            }
-            if(look_ahead_idx == path_RRT.size()) state = FINISH;
+                point goal;
+                goal.x = path_RRT[look_ahead_idx].x;
+                goal.y = path_RRT[look_ahead_idx].y;
+                goal.th = path_RRT[look_ahead_idx].th;
+                float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
+                float max_steering = 0.3;
+                if (fabs(ctrl_value) > max_steering)
+                    ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
+                
+                //setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
+                setcmdvel(1.0, ctrl_value);
+                cmd_vel_pub.publish(cmd);
+                ros::spinOnce();
+                control_rate.sleep();
+                if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
+                    && look_ahead_idx < path_RRT.size()) {
+                    look_ahead_idx++;
+                    pid_ctrl.reset();
+                }
+                if(look_ahead_idx == path_RRT.size()) state = FINISH;
             } break;
 
             case FINISH: {

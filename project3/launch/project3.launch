@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find project3)/worlds/project3.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/racecar.xacro'" />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="racecar_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -param robot_description -model racecar -x -3.5 -y 12 -z 0.05" />
+
+  <!-- ros_control racecar launch file -->
+  <include file="$(find racecar_control)/launch/racecar_control.launch" ns="/"/>
+
+  <!-- Spawn the MUXs -->
+  <arg name="racecar_version" default="racecar-v2" />
+  <include file="$(find racecar)/launch/mux.launch" ns="vesc" />
+
+  <node pkg="project3" name="gazebo_odometry_node" type="gazebo_odometry.py" output="screen"/>
+
+  <arg name="geotiff_map_file_path" default="$(find hector_geotiff)/maps"/>
+
+  <param name="/use_sim_time" value="true"/>
+
+  <node pkg="rviz" type="rviz" name="rviz"
+    args="-d $(find hector_slam_launch)/rviz_cfg/mapping_demo.rviz"/>
+
+  <include file="$(find project3)/launch/mapping_default.launch"/>
+
+  <include file="$(find hector_geotiff)/launch/geotiff_mapper.launch">
+    <arg name="trajectory_source_frame_name" value="scanmatcher_frame"/>
+    <arg name="map_file_path" value="$(arg geotiff_map_file_path)"/>
+  </include>
+</launch>

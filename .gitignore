@@ -7,11 +7,13 @@
 # add projects
 !project1/
 !project2/
+!project3/
 
 # add skeleton
 !project1.tar.gz
 !project2_skeleton.zip
 
+!hector_slam
 ###############
 
 ### default ###

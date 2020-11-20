@@ -30,7 +30,7 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 8;
+int margin = 6;
 int K = 15000;
 double MaxStep = 0.5;
 
@@ -248,8 +248,6 @@ int main(int argc, char** argv){
                 ros::spinOnce();
                 control_rate.sleep();
 
-                printf("%d goal (%f, %f)\n", look_ahead_idx, goal.x, goal.y);
-
                 if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
                     && look_ahead_idx < path_RRT.size()) {
                     look_ahead_idx++;
@@ -276,18 +274,12 @@ int main(int argc, char** argv){
 void generate_path_RRT()
 {
 	//TODO
-	// printf("Start generate_path_RRT()\n");
 	int size = waypoints.size();
 	std::vector< std::vector<traj> > path_to_waypoint;
-	// printf("waypoints.size() : %d \n",size);
 	for (int i = 0; i < size - 1; i++) {
-		// printf("Start of For Loop, i : %d\n",i);
 		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
-		// printf("After Called rrtTree Constructor\n");
 		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
-		// printf("After Called generateRRT\n");
 		std::vector<traj> temp_path = Tree.backtracking_traj();
-		// printf("After Called path_to_waypoint\n");
 
 		bool well_made = false;
         if (!temp_path.empty())
@@ -306,36 +298,19 @@ void generate_path_RRT()
 		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end()); // start_waypoint�� ���� ������ �� ���� ����, temp_path�� ������ ������ ��������� �������� �Ǿ�����.
 		//��������� start_waypoint�� ���������� ��������� �������� �����ִ� vector�� ��
 		// path_to_waypoint.push_back(waypoints[i]);
-		// printf("i : %d\n", i);
-		// printf("waypoints[i+1].th : %f \n", waypoints[i+1].th);
 		if (well_made) {
-			printf("Well Made, i : %d\n", i);
 			if (!temp_path.empty()) {
 				waypoints[i + 1].th = start_waypoint[1].th; // �� ��������ٸ� ���尢���� ������. temp_path[0]�� ������ concat�ϸ鼭 waypoint(����)�� ����Ű�Ƿ� [1]�� ��ǻ� rrtTree���� ����� ���� ������� ��ǥ����.
 			}
 			path_to_waypoint.push_back(start_waypoint);
 		}
 		else {
-			printf("Trash & Bad, i : %d\n", i);
 			if (i == 0) i = i - 1;
 			else {
 				i = i - 2;
 				path_to_waypoint.pop_back();
 			}
 		}
-		/////////////////////////// FOR DEBUGGING /////////////////////////////////
-
-		std::vector<traj> path_reversed;
-		while (!start_waypoint.empty()) {
-			path_reversed.push_back(start_waypoint.back());
-			start_waypoint.pop_back();
-		}
-		printf("Before visualize\n, current start : %d, goal : %d\n", i, i + 1);
-		Tree.visualizeTree(path_reversed);
-		printf("After visualize\n");
-		Tree.visualizeTree(path_reversed);
-		getchar();
-		/////////////////////////// FOR DEBUGGING /////////////////////////////////
 	}
 
 	for (int i = 0; i < size - 1; i++) {
@@ -344,7 +319,6 @@ void generate_path_RRT()
 			path_to_waypoint[i].pop_back();
 		}
 	}
-    printf("End of generate path RRT\n");
 }
 
 void set_waypoints()

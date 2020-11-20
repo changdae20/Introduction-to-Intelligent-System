@@ -272,49 +272,79 @@ int main(int argc, char** argv){
 
 void generate_path_RRT()
 {
-    //TODO
-    // printf("Start generate_path_RRT()\n");
-    int size = waypoints.size();
-    // printf("waypoints.size() : %d \n",size);
-    for(int i = 0; i < size-1; i++) {
-        // printf("Start of For Loop, i : %d\n",i);
-        rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
-        // printf("After Called rrtTree Constructor\n");
-        Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
-        // printf("After Called generateRRT\n");
-        std::vector<traj> path_to_waypoint = Tree.backtracking_traj();
-        // printf("After Called path_to_waypoint\n");
-        
-        // path_to_waypoint.push_back(waypoints[i]);
-        // printf("i : %d\n", i);
-        // printf("waypoints[i+1].th : %f \n", waypoints[i+1].th);
-        
-        if(!path_to_waypoint.empty()){
-            // printf("path_to_waypoint[0].th : %f \n", path_to_waypoint[0].th);
-            waypoints[i+1].th = path_to_waypoint[0].th;
-        }
-        while (!path_to_waypoint.empty()) {
-            // printf("path_to_waypoint.empty = %d \n" ,path_to_waypoint.empty());
-            // printf("path_to_waypoint.size = %d \n", path_to_waypoint.size());
-            path_RRT.push_back(path_to_waypoint.back());
-            path_to_waypoint.pop_back();
-            // printf("After pop_back : path_to_waypoint.size = %d \n" ,path_to_waypoint.size());
-        }
-        // printf("After while loop\n");
+	//TODO
+	// printf("Start generate_path_RRT()\n");
+	int size = waypoints.size();
+	std::vector<std::vector<traj>> path_to_waypoint;
+	// printf("waypoints.size() : %d \n",size);
+	for (int i = 0; i < size - 1; i++) {
+		// printf("Start of For Loop, i : %d\n",i);
+		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
+		// printf("After Called rrtTree Constructor\n");
+		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
+		// printf("After Called generateRRT\n");
+		std::vector<traj> temp_path = Tree.backtracking_traj();
+		// printf("After Called path_to_waypoint\n");
 
-        traj waypoint;
-        waypoint.x = waypoints[i+1].x;
-        waypoint.y = waypoints[i+1].y;
-        waypoint.th = waypoints[i+1].th;
-        waypoint.d = 0.325;
-        waypoint.alpha = 0;
-        path_RRT.push_back(waypoint);
-        // printf("Before visualize\n");
-        Tree.visualizeTree(path_RRT);
-        // printf("After visualize\n");
-        Tree.visualizeTree(path_RRT);
-        getchar();
-    }
+		bool well_made = rrtTree::distance(temp_path.front(), waypoint[i + 1]) < 0.5; // path가 제대로 생기지 않았는지 판단
+
+
+
+		std::vector<traj> start_waypoint;
+		traj waypoint;
+		waypoint.x = waypoints[i + 1].x;
+		waypoint.y = waypoints[i + 1].y;
+		waypoint.th = waypoints[i + 1].th;
+		waypoint.d = 0.325;
+		waypoint.alpha = 0;
+		start_waypoint.push_back(waypoint);
+		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end()); // start_waypoint는 원래 목적지 한 점만 포함, temp_path는 목적지 미포함 출발지까지 역순서로 되어있음.
+		//결과적으로 start_waypoint는 목적지포함 출발지까지 역순으로 갖고있는 vector가 됨
+		// path_to_waypoint.push_back(waypoints[i]);
+		// printf("i : %d\n", i);
+		// printf("waypoints[i+1].th : %f \n", waypoints[i+1].th);
+		if (well_made) {
+			printf("Well Made, i : %d\n", i);
+			if (!path_to_waypoint.empty()) {
+				waypoints[i + 1].th = temp_path[1].th; // 잘 만들어졌다면 입장각도를 복사함. temp_path[0]은 위에서 concat하면서 waypoint(정답)을 가리키므로 [1]이 사실상 rrtTree에서 정답과 가장 가까웠던 목표지점.
+			}
+			path_to_waypoint.push_back(temp_path);
+		}
+		else {
+			printf("Trash & Bad, i : %d\n", i);
+			if (i == 0) i = i - 1;
+			else {
+				i = i - 2;
+				path_to_waypoint.pop_back();
+			}
+		}
+		/////////////////////////// FOR DEBUGGING /////////////////////////////////
+
+		std::vector<traj> path_reversed;
+		while (!start_waypoint.empty()) {
+			path_reversed.push_back(start_waypoint.back());
+			start_waypoint.pop_back();
+		}
+		printf("Before visualize\n, current start : %d, goal : %d\n", i, i + 1);
+		Tree.visualizeTree(path_reversed);
+		printf("After visualize\n");
+		Tree.visualizeTree(path_reversed);
+		getchar();
+		/////////////////////////// FOR DEBUGGING /////////////////////////////////
+	}
+
+	for (int i = 0; i < size - 1; i++) {
+		while (!path_to_waypoint[i].empty()) {
+			path_RRT.push_back(path_to_waypoint[i].back());
+			path_to_waypoint[i].pop_back();
+		}
+	}
+
+	printf("End of generate_path_RRT, showing total path\n");
+	Tree.visualizeTree(path_reversed);
+	printf("After visualize\n");
+	Tree.visualizeTree(path_reversed);
+	getchar();
 }
 
 void set_waypoints()

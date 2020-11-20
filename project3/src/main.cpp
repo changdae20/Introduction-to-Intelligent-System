@@ -286,7 +286,7 @@ void generate_path_RRT()
 		std::vector<traj> temp_path = Tree.backtracking_traj();
 		// printf("After Called path_to_waypoint\n");
 
-		bool well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5; // path°¡ Á¦´ë·Î »ý±âÁö ¾Ê¾Ò´ÂÁö ÆÇ´Ü
+		bool well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5; // pathï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò´ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½
 
 
 
@@ -298,15 +298,15 @@ void generate_path_RRT()
 		waypoint.d = 0.325;
 		waypoint.alpha = 0;
 		start_waypoint.push_back(waypoint);
-		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end()); // start_waypoint´Â ¿ø·¡ ¸ñÀûÁö ÇÑ Á¡¸¸ Æ÷ÇÔ, temp_path´Â ¸ñÀûÁö ¹ÌÆ÷ÇÔ Ãâ¹ßÁö±îÁö ¿ª¼ø¼­·Î µÇ¾îÀÖÀ½.
-		//°á°úÀûÀ¸·Î start_waypoint´Â ¸ñÀûÁöÆ÷ÇÔ Ãâ¹ßÁö±îÁö ¿ª¼øÀ¸·Î °®°íÀÖ´Â vector°¡ µÊ
+		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end()); // start_waypointï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, temp_pathï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½.
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ start_waypointï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ vectorï¿½ï¿½ ï¿½ï¿½
 		// path_to_waypoint.push_back(waypoints[i]);
 		// printf("i : %d\n", i);
 		// printf("waypoints[i+1].th : %f \n", waypoints[i+1].th);
 		if (well_made) {
 			printf("Well Made, i : %d\n", i);
 			if (!path_to_waypoint.empty()) {
-				waypoints[i + 1].th = temp_path[1].th; // Àß ¸¸µé¾îÁ³´Ù¸é ÀÔÀå°¢µµ¸¦ º¹»çÇÔ. temp_path[0]Àº À§¿¡¼­ concatÇÏ¸é¼­ waypoint(Á¤´ä)À» °¡¸®Å°¹Ç·Î [1]ÀÌ »ç½Ç»ó rrtTree¿¡¼­ Á¤´ä°ú °¡Àå °¡±î¿ü´ø ¸ñÇ¥ÁöÁ¡.
+				waypoints[i + 1].th = temp_path[1].th; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½å°¢ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. temp_path[0]ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ concatï¿½Ï¸é¼­ waypoint(ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Å°ï¿½Ç·ï¿½ [1]ï¿½ï¿½ ï¿½ï¿½Ç»ï¿½ rrtTreeï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½.
 			}
 			path_to_waypoint.push_back(temp_path);
 		}
@@ -340,8 +340,9 @@ void generate_path_RRT()
 		}
 	}
 
+    std::vector<traj> path_reversed;
 	printf("End of generate_path_RRT, showing total path\n");
-	rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin)
+	rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);
 	Tree.visualizeTree(path_reversed);
 	printf("After visualize\n");
 	Tree.visualizeTree(path_reversed);

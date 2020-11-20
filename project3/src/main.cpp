@@ -275,7 +275,7 @@ void generate_path_RRT()
 	//TODO
 	// printf("Start generate_path_RRT()\n");
 	int size = waypoints.size();
-	std::vector<std::vector<traj>> path_to_waypoint;
+	std::vector< std::vector<traj> > path_to_waypoint;
 	// printf("waypoints.size() : %d \n",size);
 	for (int i = 0; i < size - 1; i++) {
 		// printf("Start of For Loop, i : %d\n",i);
@@ -286,7 +286,7 @@ void generate_path_RRT()
 		std::vector<traj> temp_path = Tree.backtracking_traj();
 		// printf("After Called path_to_waypoint\n");
 
-		bool well_made = rrtTree::distance(temp_path.front(), waypoint[i + 1]) < 0.5; // path가 제대로 생기지 않았는지 판단
+		bool well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5; // path가 제대로 생기지 않았는지 판단
 
 
 
@@ -341,6 +341,7 @@ void generate_path_RRT()
 	}
 
 	printf("End of generate_path_RRT, showing total path\n");
+	rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin)
 	Tree.visualizeTree(path_reversed);
 	printf("After visualize\n");
 	Tree.visualizeTree(path_reversed);

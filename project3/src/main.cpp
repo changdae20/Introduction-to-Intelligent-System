@@ -30,7 +30,7 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 6;
+int margin = 8;
 int K = 15000;
 double MaxStep = 0.5;
 
@@ -247,6 +247,9 @@ int main(int argc, char** argv){
                 cmd_vel_pub.publish(cmd);
                 ros::spinOnce();
                 control_rate.sleep();
+
+                printf("%d goal (%f, %f)\n", look_ahead_idx, goal.x, goal.y);
+
                 if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
                     && look_ahead_idx < path_RRT.size()) {
                     look_ahead_idx++;
@@ -286,7 +289,9 @@ void generate_path_RRT()
 		std::vector<traj> temp_path = Tree.backtracking_traj();
 		// printf("After Called path_to_waypoint\n");
 
-		bool well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5; // path�� ����� ������ �ʾҴ��� �Ǵ�
+		bool well_made = false;
+        if (!temp_path.empty())
+            well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5; // path�� ����� ������ �ʾҴ��� �Ǵ�
 
 
 
@@ -305,10 +310,10 @@ void generate_path_RRT()
 		// printf("waypoints[i+1].th : %f \n", waypoints[i+1].th);
 		if (well_made) {
 			printf("Well Made, i : %d\n", i);
-			if (!path_to_waypoint.empty()) {
-				waypoints[i + 1].th = temp_path[1].th; // �� ��������ٸ� ���尢���� ������. temp_path[0]�� ������ concat�ϸ鼭 waypoint(����)�� ����Ű�Ƿ� [1]�� ��ǻ� rrtTree���� ����� ���� ������� ��ǥ����.
+			if (!temp_path.empty()) {
+				waypoints[i + 1].th = start_waypoint[1].th; // �� ��������ٸ� ���尢���� ������. temp_path[0]�� ������ concat�ϸ鼭 waypoint(����)�� ����Ű�Ƿ� [1]�� ��ǻ� rrtTree���� ����� ���� ������� ��ǥ����.
 			}
-			path_to_waypoint.push_back(temp_path);
+			path_to_waypoint.push_back(start_waypoint);
 		}
 		else {
 			printf("Trash & Bad, i : %d\n", i);
@@ -339,14 +344,7 @@ void generate_path_RRT()
 			path_to_waypoint[i].pop_back();
 		}
 	}
-
-    std::vector<traj> path_reversed;
-	printf("End of generate_path_RRT, showing total path\n");
-	rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);
-	Tree.visualizeTree(path_reversed);
-	printf("After visualize\n");
-	Tree.visualizeTree(path_reversed);
-	getchar();
+    printf("End of generate path RRT\n");
 }
 
 void set_waypoints()

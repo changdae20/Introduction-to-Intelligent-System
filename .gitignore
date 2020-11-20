@@ -10,8 +10,8 @@
 !project3/
 
 # add skeleton
-!project1.tar.gz
-!project2_skeleton.zip
+project1.tar.gz
+project2_skeleton.zip
 !IS_Project_03_GodTeam.tar.gz
 
 !hector_slam

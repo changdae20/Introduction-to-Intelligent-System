@@ -201,6 +201,18 @@ void set_waypoints()
 
     //TODO 2
 
+    int arr_x[3] = {1,1,0};
+    int arr_y[3] = {1,0,0};
+    for(int i = 1 ; i <= 3 ; i ++){
+        int x_index;
+        int y_index;
+        do{
+            x_index = arr_x[i]*map_origin_x + iSize*rand()/(RAND_MAX*2);
+            y_index = arr_y[i]*map_origin_y + jSize*rand()/(RAND_MAX*2);
+        }while(map_margin.at<uchar>(x_index, y_index) < 125);
+        waypoint_candid[i].x = res*(x_index-map_origin_x);
+        waypoint_candid[i].y = res*(y_index-map_origin_y);
+    }
 
     waypoint_candid[4].x = -3.5;
     waypoint_candid[4].y = 12.0;

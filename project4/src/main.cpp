@@ -122,6 +122,7 @@ int main(int argc, char** argv){
             //TODO 1
 
             point goal;
+            PID pid_ctrl;
             goal.x = path_RRT[look_ahead_idx].x;
             goal.y = path_RRT[look_ahead_idx].y;
             goal.th = path_RRT[look_ahead_idx].th;
@@ -246,4 +247,5 @@ void generate_path_RRT()
             i = i - 2;
             path_to_waypoint.pop_back();
 		}
+    }
 }

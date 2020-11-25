@@ -69,11 +69,12 @@ int main(int argc, char** argv){
     state = INIT;
     bool running = true;
     ros::Rate control_rate(60);
+    int look_ahead_idx;
 
     while(running){
         switch (state) {
         case INIT: {
-            
+            look_ahead_idx = 0;
             // Load Map
             char* user = getpwuid(getuid())->pw_name;
             cv::Mat map_org = cv::imread((std::string("/home/") + std::string(user) +
@@ -118,8 +119,28 @@ int main(int argc, char** argv){
             state = RUNNING;
 
         case RUNNING: {
-                //TODO 1
+            //TODO 1
 
+            point goal;
+            goal.x = path_RRT[look_ahead_idx].x;
+            goal.y = path_RRT[look_ahead_idx].y;
+            goal.th = path_RRT[look_ahead_idx].th;
+
+            float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
+            float max_steering = 0.3;
+
+            if (fabs(ctrl_value) > max_steering)
+                ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
+
+            setcmdvel(1.0, ctrl_value);
+            cmd_vel_pub.publish(cmd);
+
+            if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
+                && look_ahead_idx < path_RRT.size()) {
+                look_ahead_idx++;
+                pid_ctrl.reset();
+            }
+            if(look_ahead_idx == path_RRT.size()) state = FINISH;
 
 			ros::spinOnce();
 			control_rate.sleep();
@@ -194,5 +215,35 @@ void set_waypoints()
 void generate_path_RRT()
 {
     //TODO 1
+    int size = waypoints.size();
+	std::vector< std::vector<traj> > path_to_waypoint;
+	for (int i = 0; i < size - 1; i++) {
+		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
+		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
+		std::vector<traj> temp_path = Tree.backtracking_traj();
 
+		bool well_made = false;
+        if (!temp_path.empty())
+            well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5;
+
+        std::vector<traj> start_waypoint;
+		traj waypoint;
+		waypoint.x = waypoints[i + 1].x;
+		waypoint.y = waypoints[i + 1].y;
+		waypoint.th = waypoints[i + 1].th;
+		waypoint.d = 0.325;
+		waypoint.alpha = 0;
+		start_waypoint.push_back(waypoint);
+		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
+
+        if (well_made) {
+			if (!temp_path.empty())
+				waypoints[i + 1].th = start_waypoint[1].th;
+			path_to_waypoint.push_back(start_waypoint);
+		} else if (i == 0) {
+            i = i - 1;
+        } else {
+            i = i - 2;
+            path_to_waypoint.pop_back();
+		}
 }

@@ -8,13 +8,17 @@
 !project1/
 !project2/
 !project3/
+!project4/
+
+!hector_slam
+!navigation-kinetic-devel
 
 # add skeleton
 project1.tar.gz
 project2_skeleton.zip
+
 !IS_Project_03_GodTeam.tar.gz
 
-!hector_slam
 ###############
 
 ### default ###

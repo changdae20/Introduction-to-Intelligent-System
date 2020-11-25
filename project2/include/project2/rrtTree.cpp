@@ -104,7 +104,8 @@ void rrtTree::visualizeTree(){
 	    }
     }
     cv::namedWindow("Mapping");
-    cv::Rect imgROI((int)Res*200,(int)Res*200,(int)Res*400,(int)Res*400);
+    // cv::Rect imgROI((int)Res*200,(int)Res*200,(int)Res*400,(int)Res*400);
+    cv::Rect imgROI((int)Res*0,(int)Res*0,(int)Res*540,(int)Res*179);
     cv::imshow("Mapping", imgResult(imgROI));
     cv::waitKey(1);
 }

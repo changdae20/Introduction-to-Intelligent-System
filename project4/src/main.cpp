@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 5;
-int K = 15000;
+int K = 10000;
 double MaxStep = 0.5;
 int waypoint_margin = 24;
 
@@ -40,8 +40,6 @@ std::vector<point> waypoints;
 
 //path
 std::vector<traj> path_RRT;
-
-PID pid_ctrl;
 
 //robot
 point robot_pose;
@@ -124,7 +122,7 @@ int main(int argc, char** argv){
             //TODO 1
 
             point goal;
-            // PID pid_ctrl;
+            PID pid_ctrl;
             goal.x = path_RRT[look_ahead_idx].x;
             goal.y = path_RRT[look_ahead_idx].y;
             goal.th = path_RRT[look_ahead_idx].th;
@@ -135,7 +133,7 @@ int main(int argc, char** argv){
             if (fabs(ctrl_value) > max_steering)
                 ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
 
-            printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
+            // printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
 
             setcmdvel(1.0, ctrl_value);
             cmd_vel_pub.publish(cmd);
@@ -216,8 +214,6 @@ void set_waypoints()
         } while(map_margin.at<uchar>(x_index, y_index) < 125);
         waypoint_candid[i+1].x = res*(x_index-map_origin_x);
         waypoint_candid[i+1].y = res*(y_index-map_origin_y);
-
-        printf("waypoint %d: (%f, %f)\n", i+1, waypoint_candid[i+1].x, waypoint_candid[i+1].y);
     }
 
     waypoint_candid[4].x = -3.5;
@@ -239,9 +235,6 @@ void generate_path_RRT()
 	for (int i = 0; i < size - 1; i++) {
 		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
 		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
-        // Tree.visualizeTree();
-        // Tree.visualizeTree();
-        // getchar();
 
 		std::vector<traj> temp_path = Tree.backtracking_traj();
 
@@ -263,10 +256,12 @@ void generate_path_RRT()
 			if (!temp_path.empty())
 				waypoints[i + 1].th = start_waypoint[1].th;
 			path_to_waypoint.push_back(start_waypoint);
-            printf("path %d to %d\n", i, i+1);
+            printf("generate path %d to %d\n", i, i+1);
 		} else if (i == 0) {
+            printf("cancel path %d to %d\n", i, i+1);
             i = i - 1;
         } else {
+            printf("delete path %d to %d\n", i-1, i);
             i = i - 2;
             path_to_waypoint.pop_back();
 		}
@@ -275,7 +270,6 @@ void generate_path_RRT()
     for (int i = 0; i < size - 1; i++) {
 		while (!path_to_waypoint[i].empty()) {
 			path_RRT.push_back(path_to_waypoint[i].back());
-            printf("(%f, %f)\n", path_to_waypoint[i].back().x, path_to_waypoint[i].back().y);
 			path_to_waypoint[i].pop_back();
 		}
 	}

@@ -74,6 +74,7 @@ int main(int argc, char** argv){
     while(running){
         switch (state) {
         case INIT: {
+            look_ahead_idx = 0;
             // Load Map
             char* user = getpwuid(getuid())->pw_name;
             cv::Mat map_org = cv::imread((std::string("/home/") + std::string(user) +

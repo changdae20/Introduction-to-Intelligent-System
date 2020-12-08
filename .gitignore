@@ -9,6 +9,7 @@
 !project2/
 !project3/
 !project4/
+!final_project/
 
 !hector_slam
 !navigation-kinetic-devel
@@ -18,6 +19,7 @@
 # !project2_skeleton.zip
 # !project3_skeleton.zip
 # !project4_skeleton.zip
+# !final_project.zip
 
 ###############
 

@@ -31,8 +31,8 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
-int K = 500;
-double MaxStep = 2;
+int K = 3000;
+double MaxStep = 0.5;
 int waypoint_margin = 24;
 
 //way points
@@ -69,6 +69,7 @@ int main(int argc, char** argv){
     state = INIT;
     bool running = true;
     ros::Rate control_rate(60);
+    int look_ahead_idx;
 
     while(running){
         switch (state) {
@@ -118,6 +119,34 @@ int main(int argc, char** argv){
 
         case RUNNING: {
             //TODO 3
+
+            point goal;
+            PID pid_ctrl;
+            goal.x = path_RRT[look_ahead_idx].x;
+            goal.y = path_RRT[look_ahead_idx].y;
+            goal.th = path_RRT[look_ahead_idx].th;
+
+            float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
+            float max_steering = 0.3;
+
+            if (fabs(ctrl_value) > max_steering)
+                ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
+
+            // printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
+
+            setcmdvel(1.0, ctrl_value);
+            cmd_vel_pub.publish(cmd);
+
+            if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
+                && look_ahead_idx < path_RRT.size()) {
+                look_ahead_idx++;
+                pid_ctrl.reset();
+            }
+            if(look_ahead_idx == path_RRT.size()) state = FINISH;
+
+			ros::spinOnce();
+			control_rate.sleep();
+
         } break;
 
         case FINISH: {
@@ -188,4 +217,47 @@ void set_waypoints()
 void generate_path_RRT()
 {   
     //TODO 1
+    int size = waypoints.size();
+	std::vector< std::vector<traj> > path_to_waypoint;
+	for (int i = 0; i < size - 1; i++) {
+		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
+		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
+
+		std::vector<traj> temp_path = Tree.backtracking_traj();
+
+		bool well_made = false;
+        if (!temp_path.empty())
+            well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5;
+
+        std::vector<traj> start_waypoint;
+		traj waypoint;
+		waypoint.x = waypoints[i + 1].x;
+		waypoint.y = waypoints[i + 1].y;
+		waypoint.th = waypoints[i + 1].th;
+		waypoint.d = 0.325;
+		waypoint.alpha = 0;
+		start_waypoint.push_back(waypoint);
+		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
+
+        if (well_made) {
+			if (!temp_path.empty())
+				waypoints[i + 1].th = start_waypoint[1].th;
+			path_to_waypoint.push_back(start_waypoint);
+            printf("generate path %d to %d\n", i, i+1);
+		} else if (i == 0) {
+            printf("cancel path %d to %d\n", i, i+1);
+            i = i - 1;
+        } else {
+            printf("delete path %d to %d\n", i-1, i);
+            i = i - 2;
+            path_to_waypoint.pop_back();
+		}
+    }
+
+    for (int i = 0; i < size - 1; i++) {
+		while (!path_to_waypoint[i].empty()) {
+			path_RRT.push_back(path_to_waypoint[i].back());
+			path_to_waypoint[i].pop_back();
+		}
+	}
 }

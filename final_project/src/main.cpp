@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
-int K = 3000;
+int K = 5000;
 double MaxStep = 0.5;
 int waypoint_margin = 24;
 
@@ -178,7 +178,7 @@ void callback_state(geometry_msgs::PoseWithCovarianceStampedConstPtr msgs){
 
 void set_waypoints()
 {
-    point waypoint_candid[7];
+    point waypoint_candid[8];
 
     // Starting point. (Fixed)
     waypoint_candid[0].x = -3.5;
@@ -206,9 +206,11 @@ void set_waypoints()
     waypoint_candid[5].y = 1.5;
     waypoint_candid[6].x = -2;
     waypoint_candid[6].y = -9.0;
+    waypoint_candid[7].x = -2;
+    waypoint_candid[7].y = -9.0;
 
-    int order[] = {0,1,2,3,4,5,6};
-    int order_size = 7;
+    int order[] = {0,1,2,3,4,5,6,7};
+    int order_size = 8;
 
     for(int i = 0; i < order_size; i++){
         waypoints.push_back(waypoint_candid[order[i]]);
@@ -223,6 +225,8 @@ void generate_path_RRT()
 	for (int i = 0; i < size - 1; i++) {
 		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
 		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
+
+        // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 
 		std::vector<traj> temp_path = Tree.backtracking_traj();
 

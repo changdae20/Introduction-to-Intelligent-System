@@ -106,7 +106,8 @@ void rrtTree::visualizeTree(){
     cv::namedWindow("Mapping");
     // cv::Rect imgROI((int)Res*200,(int)Res*200,(int)Res*400,(int)Res*400);
     // cv::Rect imgROI((int)Res*0,(int)Res*0,(int)Res*540,(int)Res*179);
-    cv::Rect imgROI((int)Res*0,(int)Res*0,(int)Res*408,(int)Res*188);
+    // cv::Rect imgROI((int)Res*0,(int)Res*0,(int)Res*408,(int)Res*188);
+    cv::Rect imgROI((int)0,(int)0,(int)Res*map.cols,(int)Res*map.rows);
     cv::imshow("Mapping", imgResult(imgROI));
     cv::waitKey(1);
 }
@@ -118,15 +119,15 @@ void rrtTree::visualizeTree(std::vector<traj> path){
     double Res = 2;
     double radius = 6;
     cv::Point x1, x2;
-    // printf("o\n");
+
     cv::Mat map_c;
     cv::Mat imgResult;
     cv::cvtColor(this->map, map_c, CV_GRAY2BGR);
     cv::resize(map_c, imgResult, cv::Size(), Res, Res);
-    // printf("o\n");
+
     cv::circle(imgResult, cv::Point((int)(Res*(path[0].y/res + map_origin_y)), (int)(Res*(path[0].x/res + map_origin_x))), radius, cv::Scalar(0, 0, 255), CV_FILLED);
     cv::circle(imgResult, cv::Point((int)(Res*(path[path.size()-1].y/res + map_origin_y)), (int)(Res*(path[path.size()-1].x/res + map_origin_x))), radius, cv::Scalar(0, 0, 255), CV_FILLED);
-    // printf("o\n");
+
     for(int i = 1; i < this->count; i++) {
         idx_parent = this->ptrTable[i]->idx_parent;
 	    for(int j = 0; j < 10; j++) {
@@ -163,7 +164,7 @@ void rrtTree::visualizeTree(std::vector<traj> path){
 
     cv::namedWindow("Mapping");
     //cv::Rect imgROI((int)Res*200,(int)Res*200,(int)Res*400,(int)Res*400);
-    cv::Rect imgROI((int)Res*0,(int)Res*0,(int)Res*540,(int)Res*179);
+    cv::Rect imgROI((int)0,(int)0,(int)Res*map.cols,(int)Res*map.rows);
     cv::imshow("Mapping", imgResult(imgROI));
     cv::waitKey(1);
 }

@@ -62,4 +62,5 @@ public:
     static double distance(traj, traj);
     static double distance(traj, point);
     static double thetaModulo(double, double);
+    static traj predict_point(traj, traj, double);
 };

@@ -32,7 +32,7 @@ double world_y_max;
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
 int K = 10000;
-double MaxStep = 0.5;
+double MaxStep = 2.0;
 int waypoint_margin = 24;
 
 //way points
@@ -357,7 +357,7 @@ void generate_path_RRT()
 		waypoint.alpha = 0;
 		start_waypoint.push_back(waypoint);
 		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
-        // Tree.visualizeTree(start_waypoint); Tree.visualizeTree(start_waypoint); getchar();
+        //Tree.visualizeTree(start_waypoint); Tree.visualizeTree(start_waypoint); getchar();
         if (well_made) {
 			if (!temp_path.empty()) waypoints[i + 1].th = start_waypoint[1].th;
             else waypoints[i + 1].th = waypoints[i].th;
@@ -388,12 +388,25 @@ void generate_path_RRT()
 
     for (int i = 0; i < path_to_waypoint.size(); i++) {
 		while (!path_to_waypoint[i].empty()) {
-			path_RRT.push_back(path_to_waypoint[i].back());
+            if(path_to_waypoint[i][path_to_waypoint[i].size()-2].d >0.5){
+                //printf("path to long! cut!\n");
+                //printf("Original path : (%.2f , %.2f) to (%.2f, %.2f) with theta=%.2f, alpha=%.2f\n", path_to_waypoint[i].back().x, path_to_waypoint[i].back().y,path_to_waypoint[i][path_to_waypoint[i].size()-2].x,path_to_waypoint[i][path_to_waypoint[i].size()-2].y,path_to_waypoint[i].back().th,path_to_waypoint[i].back().alpha);
+                int cut_count=1;
+                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d >0){
+                    path_RRT.push_back(rrtTree::predict_point(path_to_waypoint[i].back(),path_to_waypoint[i][path_to_waypoint[i].size()-2],path_to_waypoint[i][path_to_waypoint[i].size()-2].d<0.5 ? 0.5 * (cut_count-1) + path_to_waypoint[i][path_to_waypoint[i].size()-2].d : 0.5*cut_count));
+                    //printf("cut %d path : (%.2f, %.2f)\n",cut_count,path_RRT.back().x,path_RRT.back().y);
+                    cut_count++;
+                    path_to_waypoint[i][path_to_waypoint[i].size()-2].d -= 0.5;
+                }
+            } else
+            	path_RRT.push_back(path_to_waypoint[i].back());
 			path_to_waypoint[i].pop_back();
 		}
 	}
 
     // For Debugging
+    //rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);
+    //Tree.visualizeTree(path_RRT);
     //for(int i=0; i<path_RRT.size();i++){
     //    printf("path_RRT.push_back(traj(%.2f, %.2f, %.2f, 0.325, 0.0));\n",path_RRT[i].x,path_RRT[i].y,path_RRT[i].th);
     //}

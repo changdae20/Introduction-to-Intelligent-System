@@ -349,3 +349,12 @@ double rrtTree::distance(traj p1, point p2) {
 double rrtTree::thetaModulo(double th1, double th2) {
     return -M_PI + fmod(3 * M_PI + th1 + th2, 2 * M_PI);
 }
+
+traj rrtTree::predict_point(traj origin, traj goal,double d){
+    traj ret;
+    double R = L / tan(goal.alpha);
+    double beta = d / R;
+    ret.x = origin.x - R*sin(origin.th) + R*sin(origin.th+beta);
+    ret.y = origin.y + R*cos(origin.th) - R*cos(origin.th+beta);
+    return ret;
+}

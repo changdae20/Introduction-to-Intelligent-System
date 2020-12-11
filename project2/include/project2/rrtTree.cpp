@@ -183,18 +183,29 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
-    while(count < K){
-        point x_rand = randomState(x_max,x_min,y_max,y_min);
-        double out[5];
-        int x_near = nearestNeighbor(x_rand, MaxStep);
-        if(randompath(out, ptrTable[x_near]->location, x_rand, MaxStep)) {
-            point x_new;
-            x_new.x = out[0];
-            x_new.y = out[1];
-            x_new.th = out[2];
-            addVertex(x_new, x_rand, x_near, out[3], out[4]);
+    int cnt = 0;
+    // int idx_of_min = 0;
+    // while ((cnt + 1) * K <= N) {
+    //     printf("cnt: %d\n", cnt);
+    //     double dist = distance(x_goal, ptrTable[idx_of_min]->location);
+    //     if (dist < 0.5) break;
+        while (count < (cnt + 1) * K){
+            point x_rand = randomState(x_max,x_min,y_max,y_min);
+            double out[5];
+            int x_near = nearestNeighbor(x_rand, MaxStep);
+            if(randompath(out, ptrTable[x_near]->location, x_rand, MaxStep)) {
+                point x_new;
+                x_new.x = out[0];
+                x_new.y = out[1];
+                x_new.th = out[2];
+                addVertex(x_new, x_rand, x_near, out[3], out[4]);
+            }
         }
-    }
+    //     idx_of_min = nearestNeighbor(x_goal);
+    //     // if (dist - distance(x_goal, ptrTable[idx_of_min]->location) < 0.5) break;
+    //     ++cnt;
+    // }
+    return 0;
 }
 
 point rrtTree::randomState(double x_max, double x_min, double y_max, double y_min) {
@@ -234,6 +245,19 @@ int rrtTree::nearestNeighbor(point x_rand) {
     }
     return index;
 }
+
+// int rrtTree::nearestNeighbor(int idx_of_min, int idx_of_start) {
+//     //TODO
+//     int index = idx_of_min;
+//     double min_distance = distance(x_goal, ptrTable[index]->location);
+//     for(int i = idx_of_start; i < count; ++i) {
+//         if(min_distance > distance(x_goal, ptrTable[i]->location)) {
+//             min_distance = distance(x_goal, ptrTable[i]->location);
+//             index = i;
+//         }
+//     }
+//     return index;
+// }
 
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO

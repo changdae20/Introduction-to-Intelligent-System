@@ -14,6 +14,7 @@
 #include <project2/traj.h>
 #endif
 
+const int N = 15000;
 
 class rrtTree
 {
@@ -34,7 +35,7 @@ private:
     cv::Mat map_original;
     double map_origin_x, map_origin_y;
     double res;
-    node *ptrTable[20000];
+    node *ptrTable[N];
 
     cv::Mat addMargin(cv::Mat map, int margin);
     void addVertex(point x_new, point x_rand, int idx_near, double alpha, double d);
@@ -43,6 +44,7 @@ private:
     bool isCollision(point x1, point x2, double d, double R);
     point randomState(double x_max, double x_min, double y_max, double y_min);
     int randompath(double *out, point x_near, point x_rand, double MaxStep);
+    // int nearestNeighbor(int, int);
 
 public:
     rrtTree();

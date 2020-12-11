@@ -58,8 +58,11 @@ public:
     std::vector<traj> backtracking_traj();
 
     bool isCollision(traj x1, traj x2, double d, double R);
+
     static double distance(point, point);
     static double distance(traj, traj);
     static double distance(traj, point);
     static double thetaModulo(double, double);
+    static point traj2point(const traj&);
+    static traj point2traj(const point&);
 };

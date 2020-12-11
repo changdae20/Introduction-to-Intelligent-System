@@ -197,9 +197,6 @@ void set_waypoints()
     waypoint_candid[3].y = -7.0;
     waypoint_candid[4].x = -3.5;
     waypoint_candid[4].y = 8.5;
-    // waypoint_candid[1].x = -3.5;
-    // waypoint_candid[1].y = 8.5;
-    // waypoint_candid[1].th = 1.0;
     waypoint_candid[4].th = 1.0;
 
 
@@ -225,9 +222,11 @@ void generate_path_RRT()
 {   
     //TODO 1
     int size = waypoints.size();
-    int failed = 0, max_failure = 10;
+    int max_failure = 50;
+    int failed[size] = {0, };
     time_t start_time = time(NULL);
 	std::vector< std::vector<traj> > path_to_waypoint;
+    std::vector<point> last_points = waypoints;
 
     // outer path setting
     {   // to fold the hard-coded code
@@ -333,9 +332,16 @@ void generate_path_RRT()
         path_RRT.push_back(traj(-3.52, 8.48, 2.02, 0.325, 0.0));
         path_RRT.push_back(traj(-3.50, 8.50, 1.00, 0.325, 0.0));
     }
+    last_points[4] = rrtTree::traj2point(path_RRT.back());
 
 	for (int i = 4; i < size - 1; i++) {
-		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
+        printf(
+            "%d: (%.2f, %.2f, %.2f), (%.2f, %.2f, %.2f)\n", 
+            i, last_points[i].x, last_points[i].y, last_points[i].th,
+            waypoints[i+1].x, waypoints[i+1].y, waypoints[i+1].th
+        );
+
+		rrtTree Tree = rrtTree(last_points[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
 		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
         // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
@@ -346,38 +352,39 @@ void generate_path_RRT()
         if (!temp_path.empty())
             well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5;
         else
-            well_made = rrtTree::distance(waypoints[i], waypoints[i + 1]) < 0.5;
+            well_made = rrtTree::distance(last_points[i], waypoints[i + 1]) < 0.5;
 
         std::vector<traj> start_waypoint;
-		traj waypoint;
-		waypoint.x = waypoints[i + 1].x;
-		waypoint.y = waypoints[i + 1].y;
-		waypoint.th = waypoints[i + 1].th;
-		waypoint.d = 0.325;
-		waypoint.alpha = 0;
-		start_waypoint.push_back(waypoint);
+		// traj waypoint;
+		// waypoint.x = waypoints[i + 1].x;
+		// waypoint.y = waypoints[i + 1].y;
+		// waypoint.th = waypoints[i + 1].th;
+		// waypoint.d = 0.325;
+		// waypoint.alpha = 0;
+		// start_waypoint.push_back(waypoint);
 		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
         // Tree.visualizeTree(start_waypoint); Tree.visualizeTree(start_waypoint); getchar();
         if (well_made) {
-			if (!temp_path.empty()) waypoints[i + 1].th = start_waypoint[1].th;
-            else waypoints[i + 1].th = waypoints[i].th;
+			if (!temp_path.empty()) last_points[i + 1] = rrtTree::traj2point(start_waypoint[0]);
+            else last_points[i + 1] = last_points[i];
 			path_to_waypoint.push_back(start_waypoint);
-            printf("generate path %d to %d\n", i, i+1);
-            failed = 0;
+            printf("generate path %d to %d\n\n", i, i+1);
+            failed[i+1] = 0;
 		} else {
-            if (failed + 1 >= max_failure) {
+            if (failed[i+1] + 1 >= max_failure) {
                 printf("Too much failure to plan path, it'll give you the best result only until waypoint %d\n", i);
                 break;
             }
+            ++failed[i+1];
+            printf("failed to go to waypoint %d (count: %d / %d)\n", i+1, failed[i+1], max_failure);
             if (i <= 4) {
-                printf("cancel path %d to %d\n", i, i+1);
+                printf("cancel path %d to %d\n\n", i, i+1);
                 i = i - 1;
             } else {
-                printf("delete path %d to %d\n", i-1, i);
+                printf("delete path %d to %d\n\n", i-1, i);
                 i = i - 2;
                 path_to_waypoint.pop_back();
             }
-            printf("failed count: %d / %d\n", ++failed, max_failure);
         }
 
         if (time(NULL) - start_time > 210) {

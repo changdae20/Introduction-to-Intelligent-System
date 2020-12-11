@@ -349,3 +349,11 @@ double rrtTree::distance(traj p1, point p2) {
 double rrtTree::thetaModulo(double th1, double th2) {
     return -M_PI + fmod(3 * M_PI + th1 + th2, 2 * M_PI);
 }
+
+point rrtTree::traj2point(const traj& a) {
+    return point(a.x, a.y, a.th);
+}
+
+traj rrtTree::point2traj(const point& a) {
+	return traj(a.x, a.y, a.th, 0, 0);
+}

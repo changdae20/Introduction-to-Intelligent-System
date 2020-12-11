@@ -61,7 +61,7 @@ public:
 
     static double distance(const point&, const point&);
     static double distance(const traj&, const traj&);
-    static double distance(const traj& const point&);
+    static double distance(const traj&, const point&);
     static double thetaModulo(const double&, const double&);
     static point traj2point(const traj&);
     static traj point2traj(const point&);

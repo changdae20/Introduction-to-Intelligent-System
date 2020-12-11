@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
-int K = 5000;
+int K = 10000;
 double MaxStep = 0.5;
 int waypoint_margin = 24;
 
@@ -133,9 +133,9 @@ int main(int argc, char** argv){
             if (fabs(ctrl_value) > max_steering)
                 ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
 
-            // printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
+            //printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
 
-            setcmdvel(1.0, ctrl_value);
+            setcmdvel(0.5, ctrl_value);
             cmd_vel_pub.publish(cmd);
 
             if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
@@ -189,12 +189,12 @@ void set_waypoints()
     // Set your own waypoints.
     // The car should turn around the outer track once, and come back to the starting point.
     // This is an example.
-    waypoint_candid[1].x = 2.2;
-    waypoint_candid[1].y = 8.5;
+    waypoint_candid[1].x = 3.0;
+    waypoint_candid[1].y = 8.0;
     waypoint_candid[2].x = 2.5;
     waypoint_candid[2].y = -8.5;
-    waypoint_candid[3].x = -2.5;
-    waypoint_candid[3].y = -8.0;
+    waypoint_candid[3].x = -3.0;
+    waypoint_candid[3].y = -7.0;
     waypoint_candid[4].x = -3.5;
     waypoint_candid[4].y = 8.5;
 
@@ -204,10 +204,10 @@ void set_waypoints()
     // This is an example.
     waypoint_candid[5].x = 1.5;
     waypoint_candid[5].y = 1.5;
-    waypoint_candid[6].x = -2;
-    waypoint_candid[6].y = -9.0;
-    waypoint_candid[7].x = -2;
-    waypoint_candid[7].y = -9.0;
+    waypoint_candid[6].x = -2.0;
+    waypoint_candid[6].y = -3.0;
+    waypoint_candid[7].x = 1;
+    waypoint_candid[7].y = -4.5;
 
     int order[] = {0,1,2,3,4,5,6,7};
     int order_size = 8;
@@ -221,6 +221,7 @@ void generate_path_RRT()
 {   
     //TODO 1
     int size = waypoints.size();
+    int failed = 0;
 	std::vector< std::vector<traj> > path_to_waypoint;
 	for (int i = 0; i < size - 1; i++) {
 		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
@@ -243,7 +244,10 @@ void generate_path_RRT()
 		waypoint.alpha = 0;
 		start_waypoint.push_back(waypoint);
 		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
-
+        //Tree.visualizeTree(start_waypoint);
+        //getchar();
+        //Tree.visualizeTree(start_waypoint);
+        //getchar();
         if (well_made) {
 			if (!temp_path.empty())
 				waypoints[i + 1].th = start_waypoint[1].th;
@@ -253,13 +257,18 @@ void generate_path_RRT()
             printf("cancel path %d to %d\n", i, i+1);
             i = i - 1;
         } else {
-            printf("delete path %d to %d\n", i-1, i);
+            printf("delete path %d to %d, failed count : %d / 100\n", i-1, i,failed+1);
             i = i - 2;
+            failed = failed +1;
+            if(failed>=100){
+                printf("To many fail to plan path, it'll give you it's best result only until waypoint %d\n",i+2);
+                break;
+            }
             path_to_waypoint.pop_back();
 		}
     }
 
-    for (int i = 0; i < size - 1; i++) {
+    for (int i = 0; i < path_to_waypoint.size(); i++) {
 		while (!path_to_waypoint[i].empty()) {
 			path_RRT.push_back(path_to_waypoint[i].back());
 			path_to_waypoint[i].pop_back();

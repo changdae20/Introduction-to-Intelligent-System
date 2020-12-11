@@ -197,6 +197,7 @@ void set_waypoints()
     waypoint_candid[3].y = -7.0;
     waypoint_candid[4].x = -3.5;
     waypoint_candid[4].y = 8.5;
+    waypoint_candid[4].th = 1.0;
 
 
     // Waypoints for arbitrary goal points.
@@ -210,7 +211,7 @@ void set_waypoints()
     waypoint_candid[7].y = -4.5;
 
     int order[] = {0,1,2,3,4,5,6,7};
-    int order_size = 8;
+    int order_size = 6;
 
     for(int i = 0; i < order_size; i++){
         waypoints.push_back(waypoint_candid[order[i]]);
@@ -223,7 +224,111 @@ void generate_path_RRT()
     int size = waypoints.size();
     int failed = 0;
 	std::vector< std::vector<traj> > path_to_waypoint;
-	for (int i = 0; i < size - 1; i++) {
+
+    // outer path setting
+    path_RRT.push_back(traj(-3.00, 8.45, -0.21, 0.325, 0.0));
+    path_RRT.push_back(traj(-2.51, 8.40, 0.02, 0.325, 0.0));
+    path_RRT.push_back(traj(-2.02, 8.48, 0.30, 0.325, 0.0));
+    path_RRT.push_back(traj(-1.54, 8.61, 0.22, 0.325, 0.0));
+    path_RRT.push_back(traj(-1.05, 8.70, 0.16, 0.325, 0.0));
+    path_RRT.push_back(traj(-0.55, 8.72, -0.08, 0.325, 0.0));
+    path_RRT.push_back(traj(-0.06, 8.74, 0.16, 0.325, 0.0));
+    path_RRT.push_back(traj(0.43, 8.78, 0.00, 0.325, 0.0));
+    path_RRT.push_back(traj(0.93, 8.72, -0.24, 0.325, 0.0));
+    path_RRT.push_back(traj(1.38, 8.54, -0.54, 0.325, 0.0));
+    path_RRT.push_back(traj(1.82, 8.30, -0.44, 0.325, 0.0));
+    path_RRT.push_back(traj(2.20, 8.17, -0.22, 0.325, 0.0));
+    path_RRT.push_back(traj(2.66, 8.01, -0.45, 0.325, 0.0));
+    path_RRT.push_back(traj(2.96, 7.88, -0.41, 0.325, 0.0));
+    path_RRT.push_back(traj(3.00, 8.00, 0.00, 0.325, 0.0));
+    path_RRT.push_back(traj(3.42, 7.73, -0.72, 0.325, 0.0));
+    path_RRT.push_back(traj(3.75, 7.36, -0.96, 0.325, 0.0));
+    path_RRT.push_back(traj(3.97, 6.92, -1.26, 0.325, 0.0));
+    path_RRT.push_back(traj(4.06, 6.43, -1.50, 0.325, 0.0));
+    path_RRT.push_back(traj(4.05, 5.94, -1.67, 0.325, 0.0));
+    path_RRT.push_back(traj(4.01, 5.44, -1.64, 0.325, 0.0));
+    path_RRT.push_back(traj(3.98, 4.95, -1.64, 0.325, 0.0));
+    path_RRT.push_back(traj(3.88, 4.46, -1.88, 0.325, 0.0));
+    path_RRT.push_back(traj(3.73, 3.99, -1.91, 0.325, 0.0));
+    path_RRT.push_back(traj(3.61, 3.51, -1.71, 0.325, 0.0));
+    path_RRT.push_back(traj(3.59, 3.01, -1.51, 0.325, 0.0));
+    path_RRT.push_back(traj(3.63, 2.51, -1.45, 0.325, 0.0));
+    path_RRT.push_back(traj(3.68, 2.02, -1.50, 0.325, 0.0));
+    path_RRT.push_back(traj(3.70, 1.52, -1.55, 0.325, 0.0));
+    path_RRT.push_back(traj(3.71, 1.02, -1.56, 0.325, 0.0));
+    path_RRT.push_back(traj(3.73, 0.53, -1.49, 0.325, 0.0));
+    path_RRT.push_back(traj(3.81, 0.04, -1.33, 0.325, 0.0));
+    path_RRT.push_back(traj(3.95, -0.44, -1.27, 0.325, 0.0));
+    path_RRT.push_back(traj(4.05, -0.93, -1.44, 0.325, 0.0));
+    path_RRT.push_back(traj(4.07, -1.42, -1.63, 0.325, 0.0));
+    path_RRT.push_back(traj(4.08, -1.92, -1.47, 0.325, 0.0));
+    path_RRT.push_back(traj(4.09, -2.42, -1.64, 0.325, 0.0));
+    path_RRT.push_back(traj(4.07, -2.92, -1.58, 0.325, 0.0));
+    path_RRT.push_back(traj(4.09, -3.41, -1.50, 0.325, 0.0));
+    path_RRT.push_back(traj(4.08, -3.90, -1.65, 0.325, 0.0));
+    path_RRT.push_back(traj(4.03, -4.40, -1.73, 0.325, 0.0));
+    path_RRT.push_back(traj(3.94, -4.89, -1.74, 0.325, 0.0));
+    path_RRT.push_back(traj(3.84, -5.38, -1.83, 0.325, 0.0));
+    path_RRT.push_back(traj(3.73, -5.86, -1.76, 0.325, 0.0));
+    path_RRT.push_back(traj(3.61, -6.34, -1.86, 0.325, 0.0));
+    path_RRT.push_back(traj(3.44, -6.81, -2.00, 0.325, 0.0));
+    path_RRT.push_back(traj(3.21, -7.25, -2.10, 0.325, 0.0));
+    path_RRT.push_back(traj(3.05, -7.60, -1.88, 0.325, 0.0));
+    path_RRT.push_back(traj(2.93, -7.90, -2.02, 0.325, 0.0));
+    path_RRT.push_back(traj(2.77, -8.20, -2.13, 0.325, 0.0));
+    path_RRT.push_back(traj(2.51, -8.52, -2.38, 0.325, 0.0));
+    path_RRT.push_back(traj(2.50, -8.50, 0.00, 0.325, 0.0));
+    path_RRT.push_back(traj(2.10, -8.78, -2.67, 0.325, 0.0));
+    path_RRT.push_back(traj(1.64, -8.97, -2.85, 0.325, 0.0));
+    path_RRT.push_back(traj(1.16, -9.05, -3.11, 0.325, 0.0));
+    path_RRT.push_back(traj(0.66, -9.02, 3.01, 0.325, 0.0));
+    path_RRT.push_back(traj(0.18, -8.89, 2.71, 0.325, 0.0));
+    path_RRT.push_back(traj(-0.24, -8.62, 2.43, 0.325, 0.0));
+    path_RRT.push_back(traj(-0.64, -8.33, 2.63, 0.325, 0.0));
+    path_RRT.push_back(traj(-1.10, -8.14, 2.86, 0.325, 0.0));
+    path_RRT.push_back(traj(-1.57, -7.97, 2.77, 0.325, 0.0));
+    path_RRT.push_back(traj(-2.01, -7.74, 2.52, 0.325, 0.0));
+    path_RRT.push_back(traj(-2.43, -7.49, 2.70, 0.325, 0.0));
+    path_RRT.push_back(traj(-2.86, -7.22, 2.47, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.09, -7.00, 2.32, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.00, -7.00, 0.00, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.32, -6.61, 2.19, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.51, -6.35, 2.24, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.70, -6.06, 2.04, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.87, -5.60, 1.82, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.92, -5.11, 1.54, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.84, -4.62, 1.25, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.72, -4.14, 1.42, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.69, -3.64, 1.61, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.69, -3.15, 1.53, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.64, -2.65, 1.40, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.63, -2.16, 1.69, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.71, -1.66, 1.78, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.76, -1.17, 1.57, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.75, -0.67, 1.54, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.70, -0.19, 1.42, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.70, 0.30, 1.70, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.74, 0.80, 1.61, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.71, 1.30, 1.42, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.68, 1.79, 1.59, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.75, 2.28, 1.84, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.84, 2.76, 1.68, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.84, 3.26, 1.46, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.82, 3.75, 1.61, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.83, 4.25, 1.56, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.83, 4.74, 1.59, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.82, 5.24, 1.52, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.74, 5.73, 1.27, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.56, 6.19, 1.12, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.50, 6.66, 1.33, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.61, 7.15, 1.59, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.61, 7.48, 1.61, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.65, 7.80, 1.61, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.64, 8.18, 1.83, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.52, 8.48, 2.02, 0.325, 0.0));
+    path_RRT.push_back(traj(-3.50, 8.50, 1.00, 0.325, 0.0));
+
+	for (int i = 4; i < size - 1; i++) {
 		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
 		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
@@ -274,4 +379,9 @@ void generate_path_RRT()
 			path_to_waypoint[i].pop_back();
 		}
 	}
+
+    // For Debugging
+    //for(int i=0; i<path_RRT.size();i++){
+    //    printf("path_RRT.push_back(traj(%.2f, %.2f, %.2f, 0.325, 0.0));\n",path_RRT[i].x,path_RRT[i].y,path_RRT[i].th);
+    //}
 }

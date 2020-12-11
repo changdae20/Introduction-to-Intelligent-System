@@ -304,7 +304,7 @@ std::vector<traj> rrtTree::backtracking_traj(){
     //TODO
     std::vector<traj> path;
     for (node current_node = *ptrTable[nearestNeighbor(x_goal)]; current_node.location != x_init; current_node = *ptrTable[current_node.idx_parent]) {
-        traj current_node_traj{current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha};
+        traj current_node_traj = traj(current_node.location.x, current_node.location.y, current_node.location.th, current_node.d, current_node.alpha);
         path.push_back(current_node_traj);
     }
     return path;

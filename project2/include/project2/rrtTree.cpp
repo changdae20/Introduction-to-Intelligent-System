@@ -334,19 +334,19 @@ std::vector<traj> rrtTree::backtracking_traj(){
     return path;
 }
 
-double rrtTree::distance(point p1, point p2) {
+double rrtTree::distance(const point& p1, const point& p2) {
     return hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
-double rrtTree::distance(traj p1, traj p2) {
+double rrtTree::distance(const traj& p1, const traj& p2) {
     return hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
-double rrtTree::distance(traj p1, point p2) {
+double rrtTree::distance(const traj& p1, const point& p2) {
     return hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
-double rrtTree::thetaModulo(double th1, double th2) {
+double rrtTree::thetaModulo(const double& th1, const double& th2) {
     return -M_PI + fmod(3 * M_PI + th1 + th2, 2 * M_PI);
 }
 
@@ -356,4 +356,13 @@ point rrtTree::traj2point(const traj& a) {
 
 traj rrtTree::point2traj(const point& a) {
 	return traj(a.x, a.y, a.th, 0, 0);
+}
+
+traj rrtTree::predict_point(traj origin, traj goal, double d) {
+    traj ret;
+    double R = L / tan(goal.alpha);
+    double beta = d / R;
+    ret.x = origin.x - R*sin(origin.th) + R*sin(origin.th+beta);
+    ret.y = origin.y + R*cos(origin.th) - R*cos(origin.th+beta);
+    return ret;
 }

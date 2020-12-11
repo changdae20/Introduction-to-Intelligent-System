@@ -59,10 +59,11 @@ public:
 
     bool isCollision(traj x1, traj x2, double d, double R);
 
-    static double distance(point, point);
-    static double distance(traj, traj);
-    static double distance(traj, point);
-    static double thetaModulo(double, double);
+    static double distance(const point&, const point&);
+    static double distance(const traj&, const traj&);
+    static double distance(const traj& const point&);
+    static double thetaModulo(const double&, const double&);
     static point traj2point(const traj&);
     static traj point2traj(const point&);
+    static traj predict_point(traj, traj, double);
 };

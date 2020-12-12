@@ -12,13 +12,13 @@ PID::PID(){
      *
     */
 
-    float ctrl_rate = 60;
+    float ctrl_rate = 120;
     error = 0;
     error_sum = 0;
     error_diff = 0;
-    Kp = 0.8;
-    Ki = 0.0;
-    Kd = 0.1;
+    Kp = 1.6;
+    Ki = 0.001;
+    Kd = 0.005;
 
     Kd *= ctrl_rate;
     Ki /= ctrl_rate;

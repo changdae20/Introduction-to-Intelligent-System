@@ -343,7 +343,7 @@ point rrtTree::traj2point(const traj& a) {
 }
 
 traj rrtTree::point2traj(const point& a) {
-	return traj(a.x, a.y, a.th, 0, 0);
+	return traj(a.x, a.y, a.th, L, 0);
 }
 
 traj rrtTree::predict_point(traj origin, traj goal, double d) {

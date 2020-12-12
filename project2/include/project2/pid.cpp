@@ -17,7 +17,7 @@ PID::PID(){
     error_sum = 0;
     error_diff = 0;
     Kp = 0.8;
-    Ki = 0.001;
+    Ki = 0.0;
     Kd = 0.1;
 
     Kd *= ctrl_rate;

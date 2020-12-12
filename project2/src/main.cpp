@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
-int K = 10000;
+int K = 3000;
 double MaxStep = 2.0;
 int OUTER_POINTS = 11;
 
@@ -313,6 +313,7 @@ void generate_path_RRT()
 
         if (well_made) {
 			last_points[i + 1] = rrtTree::traj2point(start_waypoint.front());
+            start_waypoint.pop_back();
 			path_to_waypoint.push_back(start_waypoint);
             printf("generate path %d to %d\n\n", i, i+1);
             failed[i+1] = 0;
@@ -332,35 +333,32 @@ void generate_path_RRT()
                 path_to_waypoint.pop_back();
             }
         }
-        if (time(NULL) - start_time > 210) {
+        if (time(NULL) - start_time > 240) {
             printf("Too much time to generate the path\n");
             break;
         }
     }
 
     double d_threshold = 0.5;
-    for (int i = 0; i < path_to_waypoint.size(); i++) {
-		while (path_to_waypoint[i].size() > 1) {
-            if(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > d_threshold){
-                //printf("path to long! cut!\n");
-                //printf("Original path : (%.2f , %.2f) to (%.2f, %.2f) with theta=%.2f, alpha=%.2f\n", path_to_waypoint[i].back().x, path_to_waypoint[i].back().y,path_to_waypoint[i][path_to_waypoint[i].size()-2].x,path_to_waypoint[i][path_to_waypoint[i].size()-2].y,path_to_waypoint[i].back().th,path_to_waypoint[i].back().alpha);
-                int cut_count = 1;
-                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > 0) {
-                    path_RRT.push_back(
-                        rrtTree::predict_point(
-                            path_to_waypoint[i].back(),
-                            path_to_waypoint[i][path_to_waypoint[i].size()-2],
-                            path_to_waypoint[i][path_to_waypoint[i].size()-2].d < d_threshold ? d_threshold*(cut_count-1)+path_to_waypoint[i][path_to_waypoint[i].size()-2].d : d_threshold*cut_count
-                        )
-                    );
-                    //printf("cut %d path : (%.2f, %.2f)\n",cut_count,path_RRT.back().x,path_RRT.back().y);
-                    cut_count++;
-                    path_to_waypoint[i][path_to_waypoint[i].size()-2].d -= d_threshold;
-                }
-            } else path_RRT.push_back(path_to_waypoint[i].back());
-			path_to_waypoint[i].pop_back();
-		}
-	}
+    path_RRT.push_back(rrtTree::point2traj(waypoints[0]));
+    for (int i = 0; i < path_to_waypoint.size(); ++i) {
+        while (!path_to_waypoint[i].empty()) {
+            traj origin = path_RRT.back();
+            traj goal = path_to_waypoint[i].back();
+            int cut_cnt = 1;
+            while (path_to_waypoint[i].back().d >= 1.5 * d_threshold) {
+                path_RRT.push_back(
+                    rrtTree::predict_point(
+                        origin, goal, cut_cnt * d_threshold
+                    )
+                );
+                ++cut_cnt;
+                path_to_waypoint[i].back().d -= d_threshold;
+            }
+            path_RRT.push_back(path_to_waypoint[i].back());
+            path_to_waypoint[i].pop_back();
+        }
+    }
 }
 
 void set_waypoints()

@@ -29,9 +29,8 @@ rrtTree::rrtTree(point x_init, point x_goal) {
 }
 
 rrtTree::~rrtTree(){
-    for (int i = 1; i <= count; i++) {
+    for (int i = 0; i < count; i++)
         delete ptrTable[i];
-    }
 }
 
 rrtTree::rrtTree(point x_init, point x_goal, cv::Mat map, double map_origin_x, double map_origin_y, double res, int margin) {

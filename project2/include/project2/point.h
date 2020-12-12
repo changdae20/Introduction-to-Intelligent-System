@@ -23,11 +23,4 @@ struct point{
 	bool operator!=(point a) {
 		return !(*this == a);
 	}
-
-	point& operator=(const point& a) {
-		x = a.x;
-		y = a.y;
-		th = a.th;
-		return *this;
-	}
 };

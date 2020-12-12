@@ -30,9 +30,10 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 18;
+int margin = 6;
 int K = 10000;
-double MaxStep = 2;
+double MaxStep = 2.0;
+int OUTER_POINTS = 11;
 
 //way points
 std::vector<point> waypoints;
@@ -40,10 +41,6 @@ std::vector<point> waypoints;
 //path
 //std::vector<point> path_RRT;
 std::vector<traj> path_RRT;
-
-//control
-//std::vector<control> control_RRT;
-PID pid_ctrl;
 
 //robot
 point robot_pose;
@@ -246,26 +243,31 @@ int main(int argc, char** argv){
             5. if robot reach the final goal
                 finish RUNNING (state = FINISH)
             */
-            point goal;
-            goal.x = path_RRT[look_ahead_idx].x;
-            goal.y = path_RRT[look_ahead_idx].y;
-            goal.th = path_RRT[look_ahead_idx].th;
+            point goal = rrtTree::traj2point(path_RRT[look_ahead_idx]);
+            PID pid_ctrl;
+
             float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
             float max_steering = 0.3;
+
             if (fabs(ctrl_value) > max_steering)
                 ctrl_value = max_steering * ctrl_value / fabs(ctrl_value);
+
+            //printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
             
             //setcmdvel(path_RRT[look_ahead_idx].d,ctrl_value);
             setcmdvel(1.0, ctrl_value);
             cmd_vel_pub.publish(cmd);
-            ros::spinOnce();
-            control_rate.sleep();
+
             if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
                 && look_ahead_idx < path_RRT.size()) {
                 look_ahead_idx++;
                 pid_ctrl.reset();
             }
             if(look_ahead_idx == path_RRT.size()) state = FINISH;
+
+			ros::spinOnce();
+			control_rate.sleep();
+
         } break;
 
         case FINISH: {
@@ -293,29 +295,72 @@ void generate_path_RRT()
      * 5. end
      */
     int size = waypoints.size();
-    for(int i = 0; i < size-1; i++) {
-        rrtTree Tree = rrtTree(waypoints[i], waypoints[i+1], map, map_origin_x, map_origin_y, res, margin);
+    int max_failure = 50;
+    int failed[size] = {0, };
+    time_t start_time = time(NULL);
+	std::vector< std::vector<traj> > path_to_waypoint;
+    std::vector<point> last_points = waypoints;
+
+	for (int i = 0; i < size - 1; i++) {
+		rrtTree Tree = rrtTree(last_points[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
         Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
-        std::vector<traj> path_to_waypoint = Tree.backtracking_traj();
-        // path_to_waypoint.push_back(waypoints[i]);
-        waypoints[i+1].th = path_to_waypoint[0].th;
-        while (!path_to_waypoint.empty()) {
-            path_RRT.push_back(path_to_waypoint.back());
-            path_to_waypoint.pop_back();
+
+        // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
+
+		std::vector<traj> start_waypoint = Tree.backtracking_traj();
+        start_waypoint.push_back(rrtTree::point2traj(last_points[i]));
+		bool well_made = rrtTree::distance(start_waypoint.front(), waypoints[i + 1]) < 0.5;
+
+        if (well_made) {
+			last_points[i + 1] = rrtTree::traj2point(start_waypoint.front());
+			path_to_waypoint.push_back(start_waypoint);
+            printf("generate path %d to %d\n\n", i, i+1);
+            failed[i+1] = 0;
+		} else {
+            if (failed[i+1] + 1 >= max_failure) {
+                printf("Too much failure to plan path, it'll give you the best result only until waypoint %d\n", i);
+                break;
+            }
+            ++failed[i+1];
+            printf("failed to go to waypoint %d (count: %d / %d)\n", i+1, failed[i+1], max_failure);
+            if (i <= 0) {
+                printf("cancel path %d to %d\n\n", i, i+1);
+                i = i - 1;
+            } else {
+                printf("delete path %d to %d\n\n", i-1, i);
+                i = i - 2;
+                path_to_waypoint.pop_back();
+            }
         }
-        
-        traj waypoint;
-        waypoint.x = waypoints[i+1].x;
-        waypoint.y = waypoints[i+1].y;
-        waypoint.th = waypoints[i+1].th;
-        waypoint.d = 0.325;
-        waypoint.alpha = 0;
-        path_RRT.push_back(waypoint);
-        Tree.visualizeTree(path_RRT);
-        Tree.visualizeTree(path_RRT);
-        getchar();
+        if (time(NULL) - start_time > 210) {
+            printf("Too much time to generate the path\n");
+            break;
+        }
     }
 
+    double d_threshold = 0.5;
+    for (int i = 0; i < path_to_waypoint.size(); i++) {
+		while (path_to_waypoint[i].size() > 1) {
+            if(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > d_threshold){
+                //printf("path to long! cut!\n");
+                //printf("Original path : (%.2f , %.2f) to (%.2f, %.2f) with theta=%.2f, alpha=%.2f\n", path_to_waypoint[i].back().x, path_to_waypoint[i].back().y,path_to_waypoint[i][path_to_waypoint[i].size()-2].x,path_to_waypoint[i][path_to_waypoint[i].size()-2].y,path_to_waypoint[i].back().th,path_to_waypoint[i].back().alpha);
+                int cut_count = 1;
+                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > 0) {
+                    path_RRT.push_back(
+                        rrtTree::predict_point(
+                            path_to_waypoint[i].back(),
+                            path_to_waypoint[i][path_to_waypoint[i].size()-2],
+                            path_to_waypoint[i][path_to_waypoint[i].size()-2].d < d_threshold ? d_threshold*(cut_count-1)+path_to_waypoint[i][path_to_waypoint[i].size()-2].d : d_threshold*cut_count
+                        )
+                    );
+                    //printf("cut %d path : (%.2f, %.2f)\n",cut_count,path_RRT.back().x,path_RRT.back().y);
+                    cut_count++;
+                    path_to_waypoint[i][path_to_waypoint[i].size()-2].d -= d_threshold;
+                }
+            } else path_RRT.push_back(path_to_waypoint[i].back());
+			path_to_waypoint[i].pop_back();
+		}
+	}
 }
 
 void set_waypoints()

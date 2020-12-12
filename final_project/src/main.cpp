@@ -34,6 +34,7 @@ int margin = 6;
 int K = 10000;
 double MaxStep = 2.0;
 int waypoint_margin = 24;
+int OUTER_POINTS = 11;
 
 //way points
 std::vector<point> waypoints;
@@ -121,11 +122,8 @@ int main(int argc, char** argv){
         case RUNNING: {
             //TODO 3
 
-            point goal;
+            point goal = rrtTree::traj2point(path_RRT[look_ahead_idx]);
             PID pid_ctrl;
-            goal.x = path_RRT[look_ahead_idx].x;
-            goal.y = path_RRT[look_ahead_idx].y;
-            goal.th = path_RRT[look_ahead_idx].th;
 
             float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
             float max_steering = 0.3;
@@ -135,7 +133,7 @@ int main(int argc, char** argv){
 
             //printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
 
-            setcmdvel(0.5, ctrl_value);
+            setcmdvel(0.6, ctrl_value);
             cmd_vel_pub.publish(cmd);
 
             if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
@@ -178,7 +176,8 @@ void callback_state(geometry_msgs::PoseWithCovarianceStampedConstPtr msgs){
 
 void set_waypoints()
 {
-    point waypoint_candid[8];
+    OUTER_POINTS = 11;
+    point waypoint_candid[OUTER_POINTS + 3];
 
     // Starting point. (Fixed)
     waypoint_candid[0].x = -3.5;
@@ -189,33 +188,44 @@ void set_waypoints()
     // Set your own waypoints.
     // The car should turn around the outer track once, and come back to the starting point.
     // This is an example.
-    waypoint_candid[1].x = 3.0;
-    waypoint_candid[1].y = 8.0;
-    waypoint_candid[2].x = 2.5;
-    waypoint_candid[2].y = -8.5;
-    waypoint_candid[3].x = -3.0;
-    waypoint_candid[3].y = -7.0;
-    waypoint_candid[4].x = -3.5;
-    waypoint_candid[4].y = 8.5;
-    waypoint_candid[4].th = 1.0;
-
+    {   // to fold the hard-coded code
+        waypoint_candid[1].x = -1.0;
+        waypoint_candid[1].y = 9.0;
+        waypoint_candid[2].x = 2.0;
+        waypoint_candid[2].y = 8.0;
+        waypoint_candid[3].x = 3.7;
+        waypoint_candid[3].y = 5.5;
+        waypoint_candid[4].x = 3.7;
+        waypoint_candid[4].y = -5.0;
+        waypoint_candid[5].x = 3.0;
+        waypoint_candid[5].y = -8.0;
+        waypoint_candid[6].x = 0.0;
+        waypoint_candid[6].y = -9.0;
+        waypoint_candid[7].x = -3.0;
+        waypoint_candid[7].y = -7.5;
+        waypoint_candid[8].x = -3.7;
+        waypoint_candid[8].y = -5.0;
+        waypoint_candid[9].x = -4.0;
+        waypoint_candid[9].y = 5.0;
+        waypoint_candid[10] = waypoint_candid[0];
+        waypoint_candid[10].th = 1.0;
+    }
 
     // Waypoints for arbitrary goal points.
     // TA will change this part before scoring.
     // This is an example.
-    waypoint_candid[5].x = 1.5;
-    waypoint_candid[5].y = 1.5;
-    waypoint_candid[6].x = -2.0;
-    waypoint_candid[6].y = -3.0;
-    waypoint_candid[7].x = 1;
-    waypoint_candid[7].y = -4.5;
+    waypoint_candid[11].x = 1.5;
+    waypoint_candid[11].y = 1.5;
+    waypoint_candid[12].x = -2.0;
+    waypoint_candid[12].y = -3.0;
+    waypoint_candid[13].x = 1.0;
+    waypoint_candid[13].y = -4.5;
 
-    int order[] = {0,1,2,3,4,5,6,7};
-    int order_size = 8;
+    int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13};
+    int order_size = 14;
 
-    for(int i = 0; i < order_size; i++){
+    for(int i = 0; i < order_size; i++)
         waypoints.push_back(waypoint_candid[order[i]]);
-    }
 }
 
 void generate_path_RRT()
@@ -228,139 +238,26 @@ void generate_path_RRT()
 	std::vector< std::vector<traj> > path_to_waypoint;
     std::vector<point> last_points = waypoints;
 
-    // outer path setting
-    {   // to fold the hard-coded code
-        path_RRT.push_back(traj(-3.00, 8.45, -0.21, 0.325, 0.0));
-        path_RRT.push_back(traj(-2.51, 8.40, 0.02, 0.325, 0.0));
-        path_RRT.push_back(traj(-2.02, 8.48, 0.30, 0.325, 0.0));
-        path_RRT.push_back(traj(-1.54, 8.61, 0.22, 0.325, 0.0));
-        path_RRT.push_back(traj(-1.05, 8.70, 0.16, 0.325, 0.0));
-        path_RRT.push_back(traj(-0.55, 8.72, -0.08, 0.325, 0.0));
-        path_RRT.push_back(traj(-0.06, 8.74, 0.16, 0.325, 0.0));
-        path_RRT.push_back(traj(0.43, 8.78, 0.00, 0.325, 0.0));
-        path_RRT.push_back(traj(0.93, 8.72, -0.24, 0.325, 0.0));
-        path_RRT.push_back(traj(1.38, 8.54, -0.54, 0.325, 0.0));
-        path_RRT.push_back(traj(1.82, 8.30, -0.44, 0.325, 0.0));
-        path_RRT.push_back(traj(2.20, 8.17, -0.22, 0.325, 0.0));
-        path_RRT.push_back(traj(2.66, 8.01, -0.45, 0.325, 0.0));
-        path_RRT.push_back(traj(2.96, 7.88, -0.41, 0.325, 0.0));
-        path_RRT.push_back(traj(3.00, 8.00, 0.00, 0.325, 0.0));
-        path_RRT.push_back(traj(3.42, 7.73, -0.72, 0.325, 0.0));
-        path_RRT.push_back(traj(3.75, 7.36, -0.96, 0.325, 0.0));
-        path_RRT.push_back(traj(3.97, 6.92, -1.26, 0.325, 0.0));
-        path_RRT.push_back(traj(4.06, 6.43, -1.50, 0.325, 0.0));
-        path_RRT.push_back(traj(4.05, 5.94, -1.67, 0.325, 0.0));
-        path_RRT.push_back(traj(4.01, 5.44, -1.64, 0.325, 0.0));
-        path_RRT.push_back(traj(3.98, 4.95, -1.64, 0.325, 0.0));
-        path_RRT.push_back(traj(3.88, 4.46, -1.88, 0.325, 0.0));
-        path_RRT.push_back(traj(3.73, 3.99, -1.91, 0.325, 0.0));
-        path_RRT.push_back(traj(3.61, 3.51, -1.71, 0.325, 0.0));
-        path_RRT.push_back(traj(3.59, 3.01, -1.51, 0.325, 0.0));
-        path_RRT.push_back(traj(3.63, 2.51, -1.45, 0.325, 0.0));
-        path_RRT.push_back(traj(3.68, 2.02, -1.50, 0.325, 0.0));
-        path_RRT.push_back(traj(3.70, 1.52, -1.55, 0.325, 0.0));
-        path_RRT.push_back(traj(3.71, 1.02, -1.56, 0.325, 0.0));
-        path_RRT.push_back(traj(3.73, 0.53, -1.49, 0.325, 0.0));
-        path_RRT.push_back(traj(3.81, 0.04, -1.33, 0.325, 0.0));
-        path_RRT.push_back(traj(3.95, -0.44, -1.27, 0.325, 0.0));
-        path_RRT.push_back(traj(4.05, -0.93, -1.44, 0.325, 0.0));
-        path_RRT.push_back(traj(4.07, -1.42, -1.63, 0.325, 0.0));
-        path_RRT.push_back(traj(4.08, -1.92, -1.47, 0.325, 0.0));
-        path_RRT.push_back(traj(4.09, -2.42, -1.64, 0.325, 0.0));
-        path_RRT.push_back(traj(4.07, -2.92, -1.58, 0.325, 0.0));
-        path_RRT.push_back(traj(4.09, -3.41, -1.50, 0.325, 0.0));
-        path_RRT.push_back(traj(4.08, -3.90, -1.65, 0.325, 0.0));
-        path_RRT.push_back(traj(4.03, -4.40, -1.73, 0.325, 0.0));
-        path_RRT.push_back(traj(3.94, -4.89, -1.74, 0.325, 0.0));
-        path_RRT.push_back(traj(3.84, -5.38, -1.83, 0.325, 0.0));
-        path_RRT.push_back(traj(3.73, -5.86, -1.76, 0.325, 0.0));
-        path_RRT.push_back(traj(3.61, -6.34, -1.86, 0.325, 0.0));
-        path_RRT.push_back(traj(3.44, -6.81, -2.00, 0.325, 0.0));
-        path_RRT.push_back(traj(3.21, -7.25, -2.10, 0.325, 0.0));
-        path_RRT.push_back(traj(3.05, -7.60, -1.88, 0.325, 0.0));
-        path_RRT.push_back(traj(2.93, -7.90, -2.02, 0.325, 0.0));
-        path_RRT.push_back(traj(2.77, -8.20, -2.13, 0.325, 0.0));
-        path_RRT.push_back(traj(2.51, -8.52, -2.38, 0.325, 0.0));
-        path_RRT.push_back(traj(2.50, -8.50, 0.00, 0.325, 0.0));
-        path_RRT.push_back(traj(2.10, -8.78, -2.67, 0.325, 0.0));
-        path_RRT.push_back(traj(1.64, -8.97, -2.85, 0.325, 0.0));
-        path_RRT.push_back(traj(1.16, -9.05, -3.11, 0.325, 0.0));
-        path_RRT.push_back(traj(0.66, -9.02, 3.01, 0.325, 0.0));
-        path_RRT.push_back(traj(0.18, -8.89, 2.71, 0.325, 0.0));
-        path_RRT.push_back(traj(-0.24, -8.62, 2.43, 0.325, 0.0));
-        path_RRT.push_back(traj(-0.64, -8.33, 2.63, 0.325, 0.0));
-        path_RRT.push_back(traj(-1.10, -8.14, 2.86, 0.325, 0.0));
-        path_RRT.push_back(traj(-1.57, -7.97, 2.77, 0.325, 0.0));
-        path_RRT.push_back(traj(-2.01, -7.74, 2.52, 0.325, 0.0));
-        path_RRT.push_back(traj(-2.43, -7.49, 2.70, 0.325, 0.0));
-        path_RRT.push_back(traj(-2.86, -7.22, 2.47, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.09, -7.00, 2.32, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.00, -7.00, 0.00, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.32, -6.61, 2.19, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.51, -6.35, 2.24, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.70, -6.06, 2.04, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.87, -5.60, 1.82, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.92, -5.11, 1.54, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.84, -4.62, 1.25, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.72, -4.14, 1.42, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.69, -3.64, 1.61, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.69, -3.15, 1.53, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.64, -2.65, 1.40, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.63, -2.16, 1.69, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.71, -1.66, 1.78, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.76, -1.17, 1.57, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.75, -0.67, 1.54, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.70, -0.19, 1.42, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.70, 0.30, 1.70, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.74, 0.80, 1.61, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.71, 1.30, 1.42, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.68, 1.79, 1.59, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.75, 2.28, 1.84, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.84, 2.76, 1.68, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.84, 3.26, 1.46, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.82, 3.75, 1.61, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.83, 4.25, 1.56, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.83, 4.74, 1.59, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.82, 5.24, 1.52, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.74, 5.73, 1.27, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.56, 6.19, 1.12, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.50, 6.66, 1.33, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.61, 7.15, 1.59, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.61, 7.48, 1.61, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.65, 7.80, 1.61, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.64, 8.18, 1.83, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.52, 8.48, 2.02, 0.325, 0.0));
-        path_RRT.push_back(traj(-3.50, 8.50, 1.00, 0.325, 0.0));
-    }
-    last_points[4] = rrtTree::traj2point(path_RRT.back());
-
-	for (int i = 4; i < size - 1; i++) {
+	for (int i = 0; i < size - 1; i++) {
 		rrtTree Tree = rrtTree(last_points[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
-		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
+
+        if (i < OUTER_POINTS) {
+            double x_max = std::max(2*waypoints[i+1].x-waypoints[i].x, std::max(waypoints[i].x, waypoints[i+1].x)+2);
+            double x_min = std::min(2*waypoints[i+1].x-waypoints[i].x, std::min(waypoints[i].x, waypoints[i+1].x)-2);
+            double y_max = std::max(2*waypoints[i+1].y-waypoints[i].y, std::max(waypoints[i].y, waypoints[i+1].y)+2);
+            double y_min = std::min(2*waypoints[i+1].y-waypoints[i].y, std::min(waypoints[i].y, waypoints[i+1].y)-2);
+            int k = (x_max - x_min + 2) * (y_max - y_min + 2);
+            Tree.generateRRT(x_max, x_min, y_max, y_min, k * 10, MaxStep);
+        } else Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
         // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 
-		std::vector<traj> temp_path = Tree.backtracking_traj();
+		std::vector<traj> start_waypoint = Tree.backtracking_traj();
+		start_waypoint.push_back(rrtTree::point2traj(last_points[i]));
+		bool well_made = rrtTree::distance(start_waypoint.front(), waypoints[i + 1]) < 0.5;
 
-		bool well_made = false;
-        if (!temp_path.empty())
-            well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5;
-        else
-            well_made = rrtTree::distance(last_points[i], waypoints[i + 1]) < 0.5;
-
-        std::vector<traj> start_waypoint;
-		// traj waypoint;
-		// waypoint.x = waypoints[i + 1].x;
-		// waypoint.y = waypoints[i + 1].y;
-		// waypoint.th = waypoints[i + 1].th;
-		// waypoint.d = 0.325;
-		// waypoint.alpha = 0;
-		// start_waypoint.push_back(waypoint);
-		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
-        // Tree.visualizeTree(start_waypoint); Tree.visualizeTree(start_waypoint); getchar();
         if (well_made) {
-			if (!temp_path.empty()) last_points[i + 1] = rrtTree::traj2point(start_waypoint[0]);
-            else last_points[i + 1] = last_points[i];
+			last_points[i + 1] = rrtTree::traj2point(start_waypoint.front());
 			path_to_waypoint.push_back(start_waypoint);
             printf("generate path %d to %d\n\n", i, i+1);
             failed[i+1] = 0;
@@ -369,9 +266,11 @@ void generate_path_RRT()
                 printf("Too much failure to plan path, it'll give you the best result only until waypoint %d\n", i);
                 break;
             }
-            ++failed[i+1];
-            printf("failed to go to waypoint %d (count: %d / %d)\n", i+1, failed[i+1], max_failure);
-            if (i <= 4) {
+            if (i >= OUTER_POINTS) {
+                ++failed[i+1];
+                printf("failed to go to waypoint %d (count: %d / %d)\n", i+1, failed[i+1], max_failure);
+            } else printf("failed to go to waypoint %d\n", i+1);
+            if (i <= 0) {
                 printf("cancel path %d to %d\n\n", i, i+1);
                 i = i - 1;
             } else {
@@ -380,35 +279,40 @@ void generate_path_RRT()
                 path_to_waypoint.pop_back();
             }
         }
-
         if (time(NULL) - start_time > 210) {
             printf("Too much time to generate the path\n");
             break;
         }
     }
 
+    double d_threshold = 0.5;
     for (int i = 0; i < path_to_waypoint.size(); i++) {
-		while (!path_to_waypoint[i].empty()) {
-            if(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > 0.5){
+		while (path_to_waypoint[i].size() > 1) {
+            if(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > d_threshold){
                 //printf("path to long! cut!\n");
                 //printf("Original path : (%.2f , %.2f) to (%.2f, %.2f) with theta=%.2f, alpha=%.2f\n", path_to_waypoint[i].back().x, path_to_waypoint[i].back().y,path_to_waypoint[i][path_to_waypoint[i].size()-2].x,path_to_waypoint[i][path_to_waypoint[i].size()-2].y,path_to_waypoint[i].back().th,path_to_waypoint[i].back().alpha);
-                int cut_count=1;
-                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d >0){
-                    path_RRT.push_back(rrtTree::predict_point(path_to_waypoint[i].back(),path_to_waypoint[i][path_to_waypoint[i].size()-2],path_to_waypoint[i][path_to_waypoint[i].size()-2].d<0.5 ? 0.5 * (cut_count-1) + path_to_waypoint[i][path_to_waypoint[i].size()-2].d : 0.5*cut_count));
+                int cut_count = 1;
+                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > 0) {
+                    path_RRT.push_back(
+                        rrtTree::predict_point(
+                            path_to_waypoint[i].back(),
+                            path_to_waypoint[i][path_to_waypoint[i].size()-2],
+                            path_to_waypoint[i][path_to_waypoint[i].size()-2].d < d_threshold ? d_threshold*(cut_count-1)+path_to_waypoint[i][path_to_waypoint[i].size()-2].d : d_threshold*cut_count
+                        )
+                    );
                     //printf("cut %d path : (%.2f, %.2f)\n",cut_count,path_RRT.back().x,path_RRT.back().y);
                     cut_count++;
-                    path_to_waypoint[i][path_to_waypoint[i].size()-2].d -= 0.5;
+                    path_to_waypoint[i][path_to_waypoint[i].size()-2].d -= d_threshold;
                 }
-            } else
-            	path_RRT.push_back(path_to_waypoint[i].back());
+            } else path_RRT.push_back(path_to_waypoint[i].back());
 			path_to_waypoint[i].pop_back();
 		}
 	}
 
     // For Debugging
-    //rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);
-    //Tree.visualizeTree(path_RRT);
-    //for(int i=0; i<path_RRT.size();i++){
-    //    printf("path_RRT.push_back(traj(%.2f, %.2f, %.2f, 0.325, 0.0));\n",path_RRT[i].x,path_RRT[i].y,path_RRT[i].th);
-    //}
+    // rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);
+    // Tree.visualizeTree(path_RRT); getchar(); Tree.visualizeTree(path_RRT); getchar();
+    // for (int i=0; i<path_RRT.size(); i++) {
+    //     printf("path_RRT.push_back(traj(%.2f, %.2f, %.2f, 0.325, 0.0));\n",path_RRT[i].x,path_RRT[i].y,path_RRT[i].th);
+    // }
 }

@@ -183,12 +183,11 @@ void rrtTree::addVertex(point x_new, point x_rand, int idx_near, double alpha, d
 int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min, int K, double MaxStep) {
     //TODO
     int cnt = 0;
-    // int idx_of_min = 0;
-    // while ((cnt + 1) * K <= N) {
-    //     printf("cnt: %d\n", cnt);
-    //     double dist = distance(x_goal, ptrTable[idx_of_min]->location);
-    //     if (dist < 0.5) break;
-        while (count < N){
+    double min_dist = distance(x_goal, root->location);
+    while ((cnt+1)*K <= N) {
+        if (min_dist < 0.5) break;
+        int cnt_try = 0, cnt_current = count;
+        while (count < (cnt+1)*K) {
             point x_rand = randomState(x_max,x_min,y_max,y_min);
             double out[5];
             int x_near = nearestNeighbor(x_rand, MaxStep);
@@ -198,28 +197,14 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
                 x_new.y = out[1];
                 x_new.th = out[2];
                 addVertex(x_new, x_rand, x_near, out[3], out[4]);
-                
-                double dist = distance(x_goal, x_new);
-                if (dist < 0.5) break;
-                // if(x_new.x<index_recent[0])
-                //     index_recent[0] = x_new.x;
-                // if(x_new.x>index_recent[1])
-                //     index_recent[1] = x_new.x;
-                // if(x_new.y<index_recent[2])
-                //     index_recent[2] = x_new.y;
-                // if(x_new.y>index_recent[3])
-                //     index_recent[3] = x_new.y;
-                // if(count % K == K-1){
-                //     double alive = index_past[0]+index_past[2]-index_past[1]-index_past[3] -index_recent[0]-index_recent[2]+index_recent[1]+index_recent[3];
-                //     if(alive < 10)
-                //         break;
-                // }
+                double tmp = distance(x_goal, x_new);
+                if (tmp < min_dist) min_dist = tmp;
             }
+            ++cnt_try;
+            if (5*(count - cnt_current) + K < cnt_try) break;
         }
-    //     idx_of_min = nearestNeighbor(x_goal);
-    //     // if (dist - distance(x_goal, ptrTable[idx_of_min]->location) < 0.5) break;
-    //     ++cnt;
-    // }
+        ++cnt;
+    }
     return 0;
 }
 
@@ -261,19 +246,6 @@ int rrtTree::nearestNeighbor(point x_rand) {
     return index;
 }
 
-// int rrtTree::nearestNeighbor(int idx_of_min, int idx_of_start) {
-//     //TODO
-//     int index = idx_of_min;
-//     double min_distance = distance(x_goal, ptrTable[index]->location);
-//     for(int i = idx_of_start; i < count; ++i) {
-//         if(min_distance > distance(x_goal, ptrTable[i]->location)) {
-//             min_distance = distance(x_goal, ptrTable[i]->location);
-//             index = i;
-//         }
-//     }
-//     return index;
-// }
-
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO
     int sample_size = 100;
@@ -284,6 +256,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
     for(int i=0; i<sample_size; i++){
         d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
         alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
+        if (alpha_array[i] == 0) alpha_array[i] = 1e-10 * pow(-1, rand()&1);
         double radius = L / tan(alpha_array[i]);
         double beta = d_array[i] / radius;
         sample_point[i].x = x_near.x - radius*sin(x_near.th) + radius*sin(x_near.th + beta);
@@ -379,5 +352,8 @@ traj rrtTree::predict_point(traj origin, traj goal, double d) {
     double beta = d / R;
     ret.x = origin.x - R*sin(origin.th) + R*sin(origin.th+beta);
     ret.y = origin.y + R*cos(origin.th) - R*cos(origin.th+beta);
+    ret.th = thetaModulo(origin.th, beta);
+    ret.alpha = goal.alpha;
+    ret.d = goal.d - d;
     return ret;
 }

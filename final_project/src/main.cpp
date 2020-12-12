@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
-int K = 10000;
+int K = 3000;
 double MaxStep = 2.0;
 int waypoint_margin = 24;
 int OUTER_POINTS = 11;
@@ -133,7 +133,7 @@ int main(int argc, char** argv){
 
             //printf("(%.3f, %.3f) to (%.3f, %.3f)\n", robot_pose.x, robot_pose.y, goal.x, goal.y);
 
-            setcmdvel(0.6, ctrl_value);
+            setcmdvel(0.5, ctrl_value);
             cmd_vel_pub.publish(cmd);
 
             if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
@@ -208,7 +208,6 @@ void set_waypoints()
         waypoint_candid[9].x = -4.0;
         waypoint_candid[9].y = 5.0;
         waypoint_candid[10] = waypoint_candid[0];
-        waypoint_candid[10].th = 1.0;
     }
 
     // Waypoints for arbitrary goal points.
@@ -242,12 +241,16 @@ void generate_path_RRT()
 		rrtTree Tree = rrtTree(last_points[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
 
         if (i < OUTER_POINTS) {
-            double x_max = std::max(2*waypoints[i+1].x-waypoints[i].x, std::max(waypoints[i].x, waypoints[i+1].x)+2);
-            double x_min = std::min(2*waypoints[i+1].x-waypoints[i].x, std::min(waypoints[i].x, waypoints[i+1].x)-2);
-            double y_max = std::max(2*waypoints[i+1].y-waypoints[i].y, std::max(waypoints[i].y, waypoints[i+1].y)+2);
-            double y_min = std::min(2*waypoints[i+1].y-waypoints[i].y, std::min(waypoints[i].y, waypoints[i+1].y)-2);
-            int k = (x_max - x_min + 2) * (y_max - y_min + 2);
-            Tree.generateRRT(x_max, x_min, y_max, y_min, k * 10, MaxStep);
+            double x_max = std::max(3*waypoints[i+1].x-2*waypoints[i].x, std::max(waypoints[i].x, waypoints[i+1].x)+2);
+            double x_min = std::min(3*waypoints[i+1].x-2*waypoints[i].x, std::min(waypoints[i].x, waypoints[i+1].x)-2);
+            double y_max = std::max(3*waypoints[i+1].y-2*waypoints[i].y, std::max(waypoints[i].y, waypoints[i+1].y)+2);
+            double y_min = std::min(3*waypoints[i+1].y-2*waypoints[i].y, std::min(waypoints[i].y, waypoints[i+1].y)-2);
+            x_max = std::min(x_max, world_x_max);
+            x_min = std::max(x_min, world_x_min);
+            y_max = std::min(y_max, world_y_max);
+            y_min = std::max(y_min, world_y_min);
+            int k = (int)((x_max - x_min + 2) * (y_max - y_min + 2));
+            Tree.generateRRT(x_max, x_min, y_max, y_min, k * 5, MaxStep/2);
         } else Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
         // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
@@ -289,10 +292,11 @@ void generate_path_RRT()
     for (int i = 0; i < path_to_waypoint.size(); i++) {
 		while (path_to_waypoint[i].size() > 1) {
             if(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > d_threshold){
+                printf("%.2f, %.2f\n", path_to_waypoint[i][path_to_waypoint[i].size()-2].d, path_to_waypoint[i][path_to_waypoint[i].size()-2].d / d_threshold);
                 //printf("path to long! cut!\n");
                 //printf("Original path : (%.2f , %.2f) to (%.2f, %.2f) with theta=%.2f, alpha=%.2f\n", path_to_waypoint[i].back().x, path_to_waypoint[i].back().y,path_to_waypoint[i][path_to_waypoint[i].size()-2].x,path_to_waypoint[i][path_to_waypoint[i].size()-2].y,path_to_waypoint[i].back().th,path_to_waypoint[i].back().alpha);
                 int cut_count = 1;
-                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d > 0) {
+                while(path_to_waypoint[i][path_to_waypoint[i].size()-2].d >= d_threshold) {
                     path_RRT.push_back(
                         rrtTree::predict_point(
                             path_to_waypoint[i].back(),
@@ -300,6 +304,7 @@ void generate_path_RRT()
                             path_to_waypoint[i][path_to_waypoint[i].size()-2].d < d_threshold ? d_threshold*(cut_count-1)+path_to_waypoint[i][path_to_waypoint[i].size()-2].d : d_threshold*cut_count
                         )
                     );
+                    printf("cut: %d\n", cut_count);
                     //printf("cut %d path : (%.2f, %.2f)\n",cut_count,path_RRT.back().x,path_RRT.back().y);
                     cut_count++;
                     path_to_waypoint[i][path_to_waypoint[i].size()-2].d -= d_threshold;
@@ -312,7 +317,10 @@ void generate_path_RRT()
     // For Debugging
     // rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);
     // Tree.visualizeTree(path_RRT); getchar(); Tree.visualizeTree(path_RRT); getchar();
-    // for (int i=0; i<path_RRT.size(); i++) {
-    //     printf("path_RRT.push_back(traj(%.2f, %.2f, %.2f, 0.325, 0.0));\n",path_RRT[i].x,path_RRT[i].y,path_RRT[i].th);
-    // }
+    for (int i=0; i<path_RRT.size(); i++)
+        printf(
+            "path_RRT %d: (%.2f, %.2f, %.2f, %.2f)\n",
+            i+1, path_RRT[i].x, path_RRT[i].y, path_RRT[i].th, path_RRT[i].d
+        );
+    getchar();
 }

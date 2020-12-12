@@ -110,7 +110,7 @@ int main(int argc, char** argv){
         switch (state) {
         case INIT: {
             look_ahead_idx = 0;
-	        printf("path size : %d\n", path_RRT.size());
+	        printf("path size : %u\n", path_RRT.size());
             //visualize path
 	        ros::spinOnce();
             for(int i = 0; i < path_RRT.size(); i++){

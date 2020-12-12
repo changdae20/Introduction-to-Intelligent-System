@@ -44,7 +44,6 @@ private:
     bool isCollision(point x1, point x2, double d, double R);
     point randomState(double x_max, double x_min, double y_max, double y_min);
     int randompath(double *out, point x_near, point x_rand, double MaxStep);
-    // int nearestNeighbor(int, int);
 
 public:
     rrtTree();

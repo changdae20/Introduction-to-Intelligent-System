@@ -188,7 +188,7 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
     //     printf("cnt: %d\n", cnt);
     //     double dist = distance(x_goal, ptrTable[idx_of_min]->location);
     //     if (dist < 0.5) break;
-        while (count < (cnt + 1) * K){
+        while (count < N){
             point x_rand = randomState(x_max,x_min,y_max,y_min);
             double out[5];
             int x_near = nearestNeighbor(x_rand, MaxStep);
@@ -198,6 +198,22 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
                 x_new.y = out[1];
                 x_new.th = out[2];
                 addVertex(x_new, x_rand, x_near, out[3], out[4]);
+                
+                double dist = distance(x_goal, x_new);
+                if (dist < 0.5) break;
+                // if(x_new.x<index_recent[0])
+                //     index_recent[0] = x_new.x;
+                // if(x_new.x>index_recent[1])
+                //     index_recent[1] = x_new.x;
+                // if(x_new.y<index_recent[2])
+                //     index_recent[2] = x_new.y;
+                // if(x_new.y>index_recent[3])
+                //     index_recent[3] = x_new.y;
+                // if(count % K == K-1){
+                //     double alive = index_past[0]+index_past[2]-index_past[1]-index_past[3] -index_recent[0]-index_recent[2]+index_recent[1]+index_recent[3];
+                //     if(alive < 10)
+                //         break;
+                // }
             }
         }
     //     idx_of_min = nearestNeighbor(x_goal);

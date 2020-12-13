@@ -30,7 +30,7 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 6;
+int margin = 7;
 int K = 1500;
 double MaxStep = 2.0;
 int waypoint_margin = 24;
@@ -69,7 +69,7 @@ int main(int argc, char** argv){
     // FSM
     state = INIT;
     bool running = true;
-    ros::Rate control_rate(240);
+    ros::Rate control_rate(120);
     int look_ahead_idx;
 
     while(running){
@@ -176,7 +176,7 @@ void callback_state(geometry_msgs::PoseWithCovarianceStampedConstPtr msgs){
 
 void set_waypoints()
 {
-    OUTER_POINTS = 12;
+    OUTER_POINTS = 13;
     point waypoint_candid[OUTER_POINTS + 3];
 
     // Starting point. (Fixed)
@@ -196,34 +196,36 @@ void set_waypoints()
         waypoint_candid[3].x = 3.7;
         waypoint_candid[3].y = 5.7;
         waypoint_candid[4].x = 3.7;
-        waypoint_candid[4].y = 2.0;
+        waypoint_candid[4].y = 1.0;
         waypoint_candid[5].x = 3.5;
-        waypoint_candid[5].y = -6;
-        waypoint_candid[6].x = 0.0;
-        waypoint_candid[6].y = -9.0;
-        waypoint_candid[7].x = -3.0;
-        waypoint_candid[7].y = -7.5;
-        waypoint_candid[8].x = -3.7;
-        waypoint_candid[8].y = -5.0;
-        waypoint_candid[9].x = -3.8;
-        waypoint_candid[9].y = 1.0;
-        waypoint_candid[10].x = -4.2;
-        waypoint_candid[10].y = 6.5;
-        waypoint_candid[11] = waypoint_candid[0];
+        waypoint_candid[5].y = -5.7;
+        waypoint_candid[6].x = 3.0;
+        waypoint_candid[6].y = -7.6;
+        waypoint_candid[7].x = 0.0;
+        waypoint_candid[7].y = -9.0;
+        waypoint_candid[8].x = -3.0;
+        waypoint_candid[8].y = -7.5;
+        waypoint_candid[9].x = -3.7;
+        waypoint_candid[9].y = -5.0;
+        waypoint_candid[10].x = -3.8;
+        waypoint_candid[10].y = 0.0;
+        waypoint_candid[11].x = -4.1;
+        waypoint_candid[11].y = 5.0;
+        waypoint_candid[12] = waypoint_candid[0];
     }
 
     // Waypoints for arbitrary goal points.
     // TA will change this part before scoring.
     // This is an example.
-    waypoint_candid[OUTER_POINTS].x = 3;
-    waypoint_candid[OUTER_POINTS].y = -7.5;
-    waypoint_candid[OUTER_POINTS+1].x = 3.7;
-    waypoint_candid[OUTER_POINTS+1].y = 1.0;
+    waypoint_candid[OUTER_POINTS].x = 1.5;
+    waypoint_candid[OUTER_POINTS].y = 1.5;
+    waypoint_candid[OUTER_POINTS+1].x = -2.0;
+    waypoint_candid[OUTER_POINTS+1].y = -3.0;
     waypoint_candid[OUTER_POINTS+2].x = 1.0;
     waypoint_candid[OUTER_POINTS+2].y = -4.5;
 
-    int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
-    int order_size = 15;
+    int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    int order_size = 16;
 
     for(int i = 0; i < order_size; i++)
         waypoints.push_back(waypoint_candid[order[i]]);
@@ -233,7 +235,7 @@ void generate_path_RRT()
 {   
     //TODO 1
     int size = waypoints.size();
-    int max_failure = 70;
+    int max_failure = 50;
     int failed[size] = {0, };
     time_t start_time = time(NULL);
 	std::vector< std::vector<traj> > path_to_waypoint;
@@ -310,7 +312,6 @@ void generate_path_RRT()
             path_to_waypoint[i].pop_back();
         }
     }
-    path_RRT.push_back(rrtTree::point2traj(waypoints.back()));
 
     // For Debugging
     // rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);

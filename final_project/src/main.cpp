@@ -176,7 +176,7 @@ void callback_state(geometry_msgs::PoseWithCovarianceStampedConstPtr msgs){
 
 void set_waypoints()
 {
-    OUTER_POINTS = 13;
+    OUTER_POINTS = 12;
     point waypoint_candid[OUTER_POINTS + 3];
 
     // Starting point. (Fixed)
@@ -199,19 +199,17 @@ void set_waypoints()
         waypoint_candid[4].y = 2.0;
         waypoint_candid[5].x = 3.5;
         waypoint_candid[5].y = -6;
-        // waypoint_candid[6].x = 2.8;
-        // waypoint_candid[6].y = -7.9;
-        waypoint_candid[7].x = 0.0;
-        waypoint_candid[7].y = -9.0;
-        waypoint_candid[8].x = -3.0;
-        waypoint_candid[8].y = -7.5;
-        waypoint_candid[9].x = -3.7;
-        waypoint_candid[9].y = -5.0;
-        waypoint_candid[10].x = -3.8;
-        waypoint_candid[10].y = 1.0;
-        waypoint_candid[11].x = -4.2;
-        waypoint_candid[11].y = 6.5;
-        waypoint_candid[12] = waypoint_candid[0];
+        waypoint_candid[6].x = 0.0;
+        waypoint_candid[6].y = -9.0;
+        waypoint_candid[7].x = -3.0;
+        waypoint_candid[7].y = -7.5;
+        waypoint_candid[8].x = -3.7;
+        waypoint_candid[8].y = -5.0;
+        waypoint_candid[9].x = -3.8;
+        waypoint_candid[9].y = 1.0;
+        waypoint_candid[10].x = -4.2;
+        waypoint_candid[10].y = 6.5;
+        waypoint_candid[11] = waypoint_candid[0];
     }
 
     // Waypoints for arbitrary goal points.
@@ -224,8 +222,8 @@ void set_waypoints()
     waypoint_candid[OUTER_POINTS+2].x = 1.0;
     waypoint_candid[OUTER_POINTS+2].y = -4.5;
 
-    int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-    int order_size = 16;
+    int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+    int order_size = 15;
 
     for(int i = 0; i < order_size; i++)
         waypoints.push_back(waypoint_candid[order[i]]);

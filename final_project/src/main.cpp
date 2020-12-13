@@ -31,7 +31,7 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 6;
-int K = 1500;
+int K = 1000;
 double MaxStep = 2.0;
 int waypoint_margin = 24;
 int OUTER_POINTS = 11;
@@ -133,7 +133,7 @@ int main(int argc, char** argv){
 
             // printf("%d: (%.3f, %.3f) to (%.3f, %.3f)\n", look_ahead_idx, robot_pose.x, robot_pose.y, goal.x, goal.y);
 
-            setcmdvel(0.8, ctrl_value);
+            setcmdvel(0.9, ctrl_value);
             cmd_vel_pub.publish(cmd);
 
             if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
@@ -196,7 +196,7 @@ void set_waypoints()
         waypoint_candid[3].x = 3.7;
         waypoint_candid[3].y = 5.7;
         waypoint_candid[4].x = 3.7;
-        waypoint_candid[4].y = 2.0;
+        waypoint_candid[4].y = 1.0;
         waypoint_candid[5].x = 3.5;
         waypoint_candid[5].y = -6;
         waypoint_candid[6].x = -0.5;
@@ -207,19 +207,21 @@ void set_waypoints()
         waypoint_candid[8].y = -5.0;
         waypoint_candid[9].x = -3.8;
         waypoint_candid[9].y = 1.0;
-        waypoint_candid[10].x = -4.15;
-        waypoint_candid[10].y = 6.8;
-        waypoint_candid[11] = waypoint_candid[0];
+        waypoint_candid[10].x = -4.0;
+        waypoint_candid[10].y = 6;
+        waypoint_candid[11].x = -3.0;
+        waypoint_candid[11].y = 8;
+        waypoint_candid[12] = waypoint_candid[0];
     }
 
     // Waypoints for arbitrary goal points.
     // TA will change this part before scoring.
     // This is an example.
-    waypoint_candid[OUTER_POINTS].x = 3.0;
-    waypoint_candid[OUTER_POINTS].y = -7.5;
+    waypoint_candid[OUTER_POINTS].x = -2.0;
+    waypoint_candid[OUTER_POINTS].y = 6.0;
     waypoint_candid[OUTER_POINTS+1].x = 3.7;
     waypoint_candid[OUTER_POINTS+1].y = 1.0;
-    waypoint_candid[OUTER_POINTS+2].x = 1.0;
+    waypoint_candid[OUTER_POINTS+2].x = 2.0;
     waypoint_candid[OUTER_POINTS+2].y = -4.5;
 
     int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
@@ -233,28 +235,23 @@ void generate_path_RRT()
 {   
     //TODO 1
     int size = waypoints.size();
-    int max_failure = 70;
-    int failed[size] = {0, };
     time_t start_time = time(NULL);
 	std::vector< std::vector<traj> > path_to_waypoint;
     std::vector<point> last_points = waypoints;
 
 	for (int i = 0; i < size - 1; i++) {
-        if (i < OUTER_POINTS - 1) margin = 6;
-        else margin = 5;
-		rrtTree Tree = rrtTree(last_points[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
-
-        if (i < OUTER_POINTS) {
+		rrtTree Tree = rrtTree(
+            last_points[i], waypoints[i + 1],
+            map, map_origin_x, map_origin_y, res, margin,
+            world_x_max, world_x_min, world_y_max, world_y_min
+        );
+        if (i < OUTER_POINTS - 1) {
             double x_max = std::max(3*waypoints[i+1].x-2*waypoints[i].x, std::max(waypoints[i].x, waypoints[i+1].x)+2);
             double x_min = std::min(3*waypoints[i+1].x-2*waypoints[i].x, std::min(waypoints[i].x, waypoints[i+1].x)-2);
             double y_max = std::max(3*waypoints[i+1].y-2*waypoints[i].y, std::max(waypoints[i].y, waypoints[i+1].y)+2);
             double y_min = std::min(3*waypoints[i+1].y-2*waypoints[i].y, std::min(waypoints[i].y, waypoints[i+1].y)-2);
-            // x_max = std::min(x_max, world_x_max);
-            // x_min = std::max(x_min, world_x_min);
-            // y_max = std::min(y_max, world_y_max);
-            // y_min = std::max(y_min, world_y_min);
             int k = (int)((x_max - x_min + 2) * (y_max - y_min + 2));
-            Tree.generateRRT(x_max, x_min, y_max, y_min, k * 5, MaxStep/3);
+            Tree.generateRRT(x_max, x_min, y_max, y_min, k * 3, MaxStep/2);
         } else Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
         // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
@@ -267,16 +264,10 @@ void generate_path_RRT()
 			last_points[i + 1] = rrtTree::traj2point(start_waypoint.front());
 			path_to_waypoint.push_back(start_waypoint);
             printf("generate path %d to %d\n\n", i, i+1);
-            failed[i+1] = 0;
+            // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 		} else {
-            // if (failed[i+1] + 1 >= max_failure) {
-            //     printf("Too much failure to plan path, it'll give you the best result only until waypoint %d\n", i);
-            //     break;
-            // }
-            if (i >= OUTER_POINTS) {
-                ++failed[i+1];
-                printf("failed to go to waypoint %d (count: %d / %d)\n", i+1, failed[i+1], max_failure);
-            } else printf("failed to go to waypoint %d\n", i+1);
+            printf("failed to go to waypoint %d\n", i+1);
+            // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
             if (i <= 0) {
                 printf("cancel path %d to %d\n\n", i, i+1);
                 i = i - 1;
@@ -286,10 +277,10 @@ void generate_path_RRT()
                 path_to_waypoint.pop_back();
             }
         }
-        // if (time(NULL) - start_time > 210) {
-        //     printf("Too much time to generate the path\n");
-        //     break;
-        // }
+        if (time(NULL) - start_time > 270) {
+            printf("Too much time to generate the path\n");
+            break;
+        }
     }
 
     double d_threshold = 0.6;
@@ -312,7 +303,6 @@ void generate_path_RRT()
             path_to_waypoint[i].pop_back();
         }
     }
-    // path_RRT.push_back(rrtTree::point2traj(waypoints.back()));
 
     // For Debugging
     // rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);

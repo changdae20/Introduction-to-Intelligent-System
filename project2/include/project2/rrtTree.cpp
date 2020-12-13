@@ -3,7 +3,7 @@
 #include <ros/ros.h>
 #define PI 3.14159265358979323846
 
-double max_alpha = 0.18;
+double max_alpha = 0.2;
 double L = 0.325;
 
 rrtTree::rrtTree() {
@@ -21,7 +21,7 @@ rrtTree::rrtTree(point x_init, point x_goal) {
     root = new node;
     ptrTable[0] = root;
     root->idx = 0;
-    root->idx_parent = NULL;
+    root->idx_parent = 0;
     root->location = x_init;
     root->rand = x_init;
     root->alpha = 0;
@@ -47,9 +47,31 @@ rrtTree::rrtTree(point x_init, point x_goal, cv::Mat map, double map_origin_x, d
     root = new node;
     ptrTable[0] = root;
     root->idx = 0;
-    root->idx_parent = NULL;
+    root->idx_parent = 0;
     root->location = x_init;
     root->rand = x_init;
+}
+
+rrtTree::rrtTree(point x_init, point x_goal, cv::Mat map, double map_origin_x, double map_origin_y, double res, int margin, double x_max, double x_min, double y_max, double y_min) {
+    this->x_init = x_init;
+    this->x_goal = x_goal;
+    this->map_original = map.clone();
+    this->map = addMargin(map, margin);
+    this->map_origin_x = map_origin_x;
+    this->map_origin_y = map_origin_y;
+    this->res = res;
+    std::srand(std::time(NULL));
+
+    count = 1;
+    root = new node;
+    ptrTable[0] = root;
+    root->idx = 0;
+    root->idx_parent = 0;
+    root->location = x_init;
+    root->rand = x_init;
+
+    world_x_max = x_max; world_x_min = x_min;
+    world_y_max = y_max; world_y_min = y_min;
 }
 
 cv::Mat rrtTree::addMargin(cv::Mat map, int margin) {
@@ -201,7 +223,7 @@ int rrtTree::generateRRT(double x_max, double x_min, double y_max, double y_min,
                 if (tmp < min_dist) min_dist = tmp;
             }
             ++cnt_try;
-            if (5*(count - cnt_current) + K < cnt_try) break;
+            if (6*(count - cnt_current) + K < cnt_try) return 0;
         }
         ++cnt;
     }
@@ -212,6 +234,8 @@ point rrtTree::randomState(double x_max, double x_min, double y_max, double y_mi
     //TODO
     double x_rand = x_min + (x_max-x_min)*rand()/RAND_MAX;
     double y_rand = y_min + (y_max-y_min)*rand()/RAND_MAX;
+    x_rand = std::max(std::min(x_rand, world_x_max), world_x_min);
+    y_rand = std::max(std::min(y_rand, world_y_max), world_y_min);
     
     point newpoint;
     newpoint.x = x_rand;
@@ -225,7 +249,7 @@ int rrtTree::nearestNeighbor(point x_rand, double MaxStep) {
     double max_beta = MaxStep * tan(max_alpha) / L;
     int min_idx = 0;
     for (int i = 1; i < count; ++i) {
-        float relative_angle = atan2(x_rand.y - ptrTable[i]->location.y, x_rand.x - ptrTable[i]->location.x);
+        double relative_angle = atan2(x_rand.y - ptrTable[i]->location.y, x_rand.x - ptrTable[i]->location.x);
         if (distance(x_rand, ptrTable[i]->location) < distance(x_rand, ptrTable[min_idx]->location)
             && fabs(thetaModulo(ptrTable[i]->location.th, -relative_angle)) < max_beta)
             min_idx = i;
@@ -248,14 +272,17 @@ int rrtTree::nearestNeighbor(point x_rand) {
 
 int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep) {
     //TODO
-    int sample_size = 100;
+    int sample_size = 30;
+    double min_d = 0.5;
     double d_array[sample_size]; 
     double alpha_array[sample_size];
     point sample_point[sample_size];
     int min_distance_idx = 0;
-    for(int i=0; i<sample_size; i++){
-        d_array[i] = L + (MaxStep-L)*rand()/RAND_MAX;
-        alpha_array[i] = -max_alpha + (2*max_alpha)*rand()/RAND_MAX;
+    for(int i=0; i<sample_size; i++) {
+        double relative_angle = atan2(x_rand.y - x_near.y, x_rand.x - x_near.x);
+        double angle = thetaModulo(-x_near.th, relative_angle) - max_alpha + (2*max_alpha)*rand()/RAND_MAX;
+        d_array[i] = min_d + (MaxStep-min_d)*rand()/RAND_MAX;
+        alpha_array[i] = std::max(std::min(angle, max_alpha), -max_alpha);
         if (alpha_array[i] == 0) alpha_array[i] = 1e-10 * pow(-1, rand()&1);
         double radius = L / tan(alpha_array[i]);
         double beta = d_array[i] / radius;
@@ -264,7 +291,7 @@ int rrtTree::randompath(double *out, point x_near, point x_rand, double MaxStep)
         sample_point[i].th = thetaModulo(x_near.th , beta);
     }
     double min_distance = distance(x_rand,sample_point[0]);
-    for(int i=1; i<sample_size; i++){
+    for(int i=1; i<sample_size; i++) {
         if(distance(x_rand,sample_point[i])<min_distance ){
             min_distance = distance(x_rand,sample_point[i]);
             min_distance_idx = i;

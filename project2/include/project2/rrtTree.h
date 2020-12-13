@@ -14,7 +14,7 @@
 #include <project2/traj.h>
 #endif
 
-const int N = 15000;
+const int N = 12000;
 
 class rrtTree
 {

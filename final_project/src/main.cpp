@@ -310,7 +310,7 @@ void generate_path_RRT()
             path_to_waypoint[i].pop_back();
         }
     }
-    path_RRT.push_back(waypoints.back());
+    path_RRT.push_back(rrtTree::point2traj(waypoints.back()));
 
     // For Debugging
     // rrtTree Tree = rrtTree(waypoints.front(), waypoints.back(), map, map_origin_x, map_origin_y, res, margin);

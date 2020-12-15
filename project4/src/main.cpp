@@ -31,8 +31,8 @@ double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
 int margin = 5;
-int K = 3000;
-double MaxStep = 0.5;
+int K = 1500;
+double MaxStep = 2.0;
 int waypoint_margin = 24;
 
 //way points
@@ -219,8 +219,8 @@ void set_waypoints()
     waypoint_candid[4].x = -3.5;
     waypoint_candid[4].y = 12.0;
 
-    int order[] = {0,1,2,3,4};
-    int order_size = 5;
+    int order[] = {0,1,2,3,4,1,2,3};
+    int order_size = 8;
 
     for(int i = 0; i < order_size; i++){
         waypoints.push_back(waypoint_candid[order[i]]);
@@ -231,46 +231,68 @@ void generate_path_RRT()
 {
     //TODO 1
     int size = waypoints.size();
+    int max_failure = 70;
+    int failed[size] = {0, };
+    time_t start_time = time(NULL);
 	std::vector< std::vector<traj> > path_to_waypoint;
+    std::vector<point> last_points = waypoints;
+
 	for (int i = 0; i < size - 1; i++) {
-		rrtTree Tree = rrtTree(waypoints[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
-		Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
+		rrtTree Tree = rrtTree(last_points[i], waypoints[i + 1], map, map_origin_x, map_origin_y, res, margin);
 
-		std::vector<traj> temp_path = Tree.backtracking_traj();
+        Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
-		bool well_made = false;
-        if (!temp_path.empty())
-            well_made = rrtTree::distance(temp_path.front(), waypoints[i + 1]) < 0.5;
+        // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 
-        std::vector<traj> start_waypoint;
-		traj waypoint;
-		waypoint.x = waypoints[i + 1].x;
-		waypoint.y = waypoints[i + 1].y;
-		waypoint.th = waypoints[i + 1].th;
-		waypoint.d = 0.325;
-		waypoint.alpha = 0;
-		start_waypoint.push_back(waypoint);
-		start_waypoint.insert(start_waypoint.end(), temp_path.begin(), temp_path.end());
+		std::vector<traj> start_waypoint = Tree.backtracking_traj();
+		start_waypoint.push_back(rrtTree::point2traj(last_points[i]));
+		bool well_made = rrtTree::distance(start_waypoint.front(), waypoints[i + 1]) < 0.5;
 
         if (well_made) {
-			if (!temp_path.empty())
-				waypoints[i + 1].th = start_waypoint[1].th;
+			last_points[i + 1] = rrtTree::traj2point(start_waypoint.front());
 			path_to_waypoint.push_back(start_waypoint);
-            printf("generate path %d to %d\n", i, i+1);
-		} else if (i == 0) {
-            printf("cancel path %d to %d\n", i, i+1);
-            i = i - 1;
-        } else {
-            printf("delete path %d to %d\n", i-1, i);
-            i = i - 2;
-            path_to_waypoint.pop_back();
-		}
+            printf("generate path %d to %d\n\n", i, i+1);
+            failed[i+1] = 0;
+		} else {
+            if (failed[i+1] + 1 >= max_failure) {
+                printf("Too much failure to plan path, it'll give you the best result only until waypoint %d\n", i);
+                break;
+            }
+            ++failed[i+1];
+            printf("failed to go to waypoint %d (count: %d / %d)\n", i+1, failed[i+1], max_failure);
+            if (i <= 0) {
+                printf("cancel path %d to %d\n\n", i, i+1);
+                i = i - 1;
+            } else {
+                printf("delete path %d to %d\n\n", i-1, i);
+                i = i - 2;
+                path_to_waypoint.pop_back();
+            }
+        }
+        // if (time(NULL) - start_time > 210) {
+        //     printf("Too much time to generate the path\n");
+        //     break;
+        // }
     }
 
-    for (int i = 0; i < size - 1; i++) {
-		while (!path_to_waypoint[i].empty()) {
-			path_RRT.push_back(path_to_waypoint[i].back());
-			path_to_waypoint[i].pop_back();
-		}
-	}
+    double d_threshold = 0.6;
+    path_RRT.push_back(rrtTree::point2traj(waypoints[0]));
+    for (int i = 0; i < path_to_waypoint.size(); ++i) {
+        while (!path_to_waypoint[i].empty()) {
+            traj origin = path_RRT.back();
+            traj goal = path_to_waypoint[i].back();
+            int cut_cnt = 1;
+            while (path_to_waypoint[i].back().d >= 1.5 * d_threshold) {
+                path_RRT.push_back(
+                    rrtTree::predict_point(
+                        origin, goal, cut_cnt * d_threshold
+                    )
+                );
+                ++cut_cnt;
+                path_to_waypoint[i].back().d -= d_threshold;
+            }
+            path_RRT.push_back(path_to_waypoint[i].back());
+            path_to_waypoint[i].pop_back();
+        }
+    }
 }

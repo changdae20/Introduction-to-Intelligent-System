@@ -14,7 +14,7 @@
 #include <project2/traj.h>
 #endif
 
-const int N = 18000;
+const int N = 9000;
 
 class rrtTree
 {
@@ -35,6 +35,7 @@ private:
     cv::Mat map_original;
     double map_origin_x, map_origin_y;
     double res;
+    double world_x_max, world_x_min, world_y_max, world_y_min;
     node *ptrTable[N];
 
     cv::Mat addMargin(cv::Mat map, int margin);
@@ -49,6 +50,7 @@ public:
     rrtTree();
     rrtTree(point x_init, point x_goal, cv::Mat map, double map_origin_x, double map_origin_y, double res, int margin);
     rrtTree(point x_init, point x_goal);
+    rrtTree(point x_init, point x_goal, cv::Mat map, double map_origin_x, double map_origin_y, double res, int margin, double x_max, double x_min, double y_max, double y_min);
     ~rrtTree();
 
     void visualizeTree();

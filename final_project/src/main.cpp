@@ -69,7 +69,7 @@ int main(int argc, char** argv){
     // FSM
     state = INIT;
     bool running = true;
-    ros::Rate control_rate(120);
+    ros::Rate control_rate(240);
     int look_ahead_idx;
 
     while(running){
@@ -217,12 +217,18 @@ void set_waypoints()
     // Waypoints for arbitrary goal points.
     // TA will change this part before scoring.
     // This is an example.
-    waypoint_candid[OUTER_POINTS].x = -2.0;
-    waypoint_candid[OUTER_POINTS].y = 6.0;
-    waypoint_candid[OUTER_POINTS+1].x = 3.7;
-    waypoint_candid[OUTER_POINTS+1].y = 1.0;
-    waypoint_candid[OUTER_POINTS+2].x = 2.0;
-    waypoint_candid[OUTER_POINTS+2].y = -4.5;
+    waypoint_candid[OUTER_POINTS].x = -2.5;
+    waypoint_candid[OUTER_POINTS].y = -6.5;
+    waypoint_candid[OUTER_POINTS+1].x = -2.5;
+    waypoint_candid[OUTER_POINTS+1].y = 6.5;
+    waypoint_candid[OUTER_POINTS+2].x = 1.5;
+    waypoint_candid[OUTER_POINTS+2].y = 0.0;
+    // waypoint_candid[OUTER_POINTS].x = 2.0;
+    // waypoint_candid[OUTER_POINTS].y = 1.5;
+    // waypoint_candid[OUTER_POINTS+1].x = -2.5;
+    // waypoint_candid[OUTER_POINTS+1].y = 8.5;
+    // waypoint_candid[OUTER_POINTS+2].x = -2.8;
+    // waypoint_candid[OUTER_POINTS+2].y = -8.1;
 
     int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int order_size = 15;

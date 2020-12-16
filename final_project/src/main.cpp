@@ -14,6 +14,9 @@
 #include <project2/pid.h>
 #include <math.h>
 #include <pwd.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 
@@ -69,7 +72,7 @@ int main(int argc, char** argv){
     // FSM
     state = INIT;
     bool running = true;
-    ros::Rate control_rate(120);
+    ros::Rate control_rate(240);
     int look_ahead_idx;
 
     while(running){
@@ -104,14 +107,49 @@ int main(int argc, char** argv){
         } break;
 
         case PATH_PLANNING:
-            
-            // Set Way Points
-            set_waypoints();
-            printf("Set way points\n");
+            printf("Enter a number. 1 : plan a new path and save as path.txt, 2 : load path from txt\n");
+            int input;
+            std::cin >> input;
 
-            // RRT
-            generate_path_RRT();
-            printf("Generate RRT\n");
+            if(input==1){
+                // Set Way Points
+                set_waypoints();
+                printf("Set way points\n");
+
+                // RRT
+                generate_path_RRT();
+                printf("Generate RRT\n");
+
+                // save as path.txt
+                std::ofstream out("path.txt");
+                for(int i=0;i<path_RRT.size();i++){
+                    printf("saved %d-th waypoint\n",i);
+                    out<<path_RRT[i].x<<std::endl<<path_RRT[i].y<<std::endl<<path_RRT[i].th<<std::endl;
+                }
+            } else if(input==2){
+                // load from path.txt
+                std::ifstream in("path.txt");
+                std::string buf;
+                char *pos = NULL;
+                int count=0;
+                traj temp;
+                while(getline(in,buf)){
+                    if(count%3==0){
+                        temp.x = std::stof(buf);
+                        count=count+1;
+                    } else if(count%3==1){
+                        temp.y = std::stof(buf);
+                        count=count+1;
+                    } else{
+                        temp.th = std::stof(buf);
+                        traj temp2 = temp;
+                        path_RRT.push_back(temp2);
+                        count=count+1;
+                        printf("loaded %d-th traj\n",count/3);
+                    }
+                }
+                printf("path load complete\n");
+            }
 
             ros::spinOnce();
             ros::Rate(0.33).sleep();
@@ -217,12 +255,18 @@ void set_waypoints()
     // Waypoints for arbitrary goal points.
     // TA will change this part before scoring.
     // This is an example.
-    waypoint_candid[OUTER_POINTS].x = -2.0;
-    waypoint_candid[OUTER_POINTS].y = 6.0;
-    waypoint_candid[OUTER_POINTS+1].x = 3.7;
-    waypoint_candid[OUTER_POINTS+1].y = 1.0;
-    waypoint_candid[OUTER_POINTS+2].x = 2.0;
-    waypoint_candid[OUTER_POINTS+2].y = -4.5;
+    waypoint_candid[OUTER_POINTS].x = -2.5;
+    waypoint_candid[OUTER_POINTS].y = -6.5;
+    waypoint_candid[OUTER_POINTS+1].x = -2.5;
+    waypoint_candid[OUTER_POINTS+1].y = 6.5;
+    waypoint_candid[OUTER_POINTS+2].x = 1.5;
+    waypoint_candid[OUTER_POINTS+2].y = 0.0;
+    // waypoint_candid[OUTER_POINTS].x = 2.0;
+    // waypoint_candid[OUTER_POINTS].y = 1.5;
+    // waypoint_candid[OUTER_POINTS+1].x = -2.5;
+    // waypoint_candid[OUTER_POINTS+1].y = 8.5;
+    // waypoint_candid[OUTER_POINTS+2].x = -2.8;
+    // waypoint_candid[OUTER_POINTS+2].y = -8.1;
 
     int order[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
     int order_size = 15;
@@ -245,7 +289,7 @@ void generate_path_RRT()
             map, map_origin_x, map_origin_y, res, margin,
             world_x_max, world_x_min, world_y_max, world_y_min
         );
-        if (i < OUTER_POINTS - 1) {
+        if (i < OUTER_POINTS-1) {
             double x_max = std::max(3*waypoints[i+1].x-2*waypoints[i].x, std::max(waypoints[i].x, waypoints[i+1].x)+2);
             double x_min = std::min(3*waypoints[i+1].x-2*waypoints[i].x, std::min(waypoints[i].x, waypoints[i+1].x)-2);
             double y_max = std::max(3*waypoints[i+1].y-2*waypoints[i].y, std::max(waypoints[i].y, waypoints[i+1].y)+2);

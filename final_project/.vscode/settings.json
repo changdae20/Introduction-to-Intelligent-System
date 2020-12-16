@@ -1,6 +1,6 @@
 {
     "files.associations": {
-        "array": "cpp",
+        "string": "cpp",
         "deque": "cpp",
         "vector": "cpp",
         "cctype": "cpp",
@@ -14,6 +14,7 @@
         "ctime": "cpp",
         "cwchar": "cpp",
         "cwctype": "cpp",
+        "array": "cpp",
         "atomic": "cpp",
         "strstream": "cpp",
         "*.tcc": "cpp",
@@ -33,7 +34,6 @@
         "fstream": "cpp",
         "initializer_list": "cpp",
         "iomanip": "cpp",
-        "iosfwd": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
         "limits": "cpp",
@@ -49,7 +49,6 @@
         "cinttypes": "cpp",
         "utility": "cpp",
         "typeindex": "cpp",
-        "typeinfo": "cpp",
-        "string": "cpp"
+        "typeinfo": "cpp"
     }
 }

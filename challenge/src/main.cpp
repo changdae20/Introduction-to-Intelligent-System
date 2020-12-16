@@ -37,6 +37,7 @@ double world_y_max;
 int margin = 7;
 int K = 1000;
 double MaxStep = 2.0;
+int OUTER_POINTS = 0;
 /////////
 
 //way points
@@ -120,7 +121,7 @@ int main(int argc, char** argv){
     // FSM
     state = INIT;
     bool running = true;
-    ros::Rate control_rate(60);
+    ros::Rate control_rate(240);
 
     while(running){
         switch (state) {

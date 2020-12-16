@@ -5,6 +5,8 @@
 #define PATH_PLANNING 3
 #define FINISH -1
 
+#include <fstream>
+#include <string>
 #include <unistd.h>
 #include <ros/ros.h>
 #include <project2/rrtTree.h>
@@ -195,6 +197,7 @@ int main(int argc, char** argv){
     }
     return 0;
 }
+
 
 void generate_path_RRT()
 {

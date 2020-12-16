@@ -254,7 +254,7 @@ void generate_path_RRT()
             Tree.generateRRT(x_max, x_min, y_max, y_min, k * 3, MaxStep/2);
         } else Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
-        // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
+        Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 
 		std::vector<traj> start_waypoint = Tree.backtracking_traj();
 		start_waypoint.push_back(rrtTree::point2traj(last_points[i]));

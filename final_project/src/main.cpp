@@ -14,6 +14,9 @@
 #include <project2/pid.h>
 #include <math.h>
 #include <pwd.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 
@@ -104,14 +107,49 @@ int main(int argc, char** argv){
         } break;
 
         case PATH_PLANNING:
-            
-            // Set Way Points
-            set_waypoints();
-            printf("Set way points\n");
+            printf("Enter a number. 1 : plan a new path and save as path.txt, 2 : load path from txt\n");
+            int input;
+            std::cin >> input;
 
-            // RRT
-            generate_path_RRT();
-            printf("Generate RRT\n");
+            if(input==1){
+                // Set Way Points
+                set_waypoints();
+                printf("Set way points\n");
+
+                // RRT
+                generate_path_RRT();
+                printf("Generate RRT\n");
+
+                // save as path.txt
+                std::ofstream out("path.txt");
+                for(int i=0;i<path_RRT.size();i++){
+                    printf("saved %d-th waypoint\n",i);
+                    out<<path_RRT[i].x<<std::endl<<path_RRT[i].y<<std::endl<<path_RRT[i].th<<std::endl;
+                }
+            } else if(input==2){
+                // load from path.txt
+                std::ifstream in("path.txt");
+                std::string buf;
+                char *pos = NULL;
+                int count=0;
+                traj temp;
+                while(getline(in,buf)){
+                    if(count%3==0){
+                        temp.x = std::stof(buf);
+                        count=count+1;
+                    } else if(count%3==1){
+                        temp.y = std::stof(buf);
+                        count=count+1;
+                    } else{
+                        temp.th = std::stof(buf);
+                        traj temp2 = temp;
+                        path_RRT.push_back(temp2);
+                        count=count+1;
+                        printf("loaded %d-th traj\n",count/3);
+                    }
+                }
+                printf("path load complete\n");
+            }
 
             ros::spinOnce();
             ros::Rate(0.33).sleep();
@@ -251,7 +289,7 @@ void generate_path_RRT()
             map, map_origin_x, map_origin_y, res, margin,
             world_x_max, world_x_min, world_y_max, world_y_min
         );
-        if (i < OUTER_POINTS - 1) {
+        if (i < OUTER_POINTS-1) {
             double x_max = std::max(3*waypoints[i+1].x-2*waypoints[i].x, std::max(waypoints[i].x, waypoints[i+1].x)+2);
             double x_min = std::min(3*waypoints[i+1].x-2*waypoints[i].x, std::min(waypoints[i].x, waypoints[i+1].x)-2);
             double y_max = std::max(3*waypoints[i+1].y-2*waypoints[i].y, std::max(waypoints[i].y, waypoints[i+1].y)+2);
@@ -260,7 +298,7 @@ void generate_path_RRT()
             Tree.generateRRT(x_max, x_min, y_max, y_min, k * 3, MaxStep/2);
         } else Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
-        // Tree.visualizeTree(); Tree.visualizeTree(); getchar();
+        Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 
 		std::vector<traj> start_waypoint = Tree.backtracking_traj();
 		start_waypoint.push_back(rrtTree::point2traj(last_points[i]));

@@ -33,7 +33,7 @@ double world_y_min;
 double world_y_max;
 
 //parameters we should adjust : K, margin, MaxStep
-int margin = 6;
+int margin = 7;
 int K = 1000;
 double MaxStep = 2.0;
 int waypoint_margin = 24;
@@ -162,8 +162,8 @@ int main(int argc, char** argv){
 
             point goal = rrtTree::traj2point(path_RRT[look_ahead_idx]);
             PID pid_ctrl;
-
-            float ctrl_value = pid_ctrl.get_control(robot_pose, goal);
+            float velocity = 1.4;
+            float ctrl_value = pid_ctrl.get_control(robot_pose, goal)*0.4/velocity;
             float max_steering = 0.3;
 
             if (fabs(ctrl_value) > max_steering)
@@ -171,10 +171,10 @@ int main(int argc, char** argv){
 
             // printf("%d: (%.3f, %.3f) to (%.3f, %.3f)\n", look_ahead_idx, robot_pose.x, robot_pose.y, goal.x, goal.y);
 
-            setcmdvel(0.9, ctrl_value);
+            setcmdvel(velocity, ctrl_value);
             cmd_vel_pub.publish(cmd);
 
-            if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.2 : 0.5) 
+            if (rrtTree::distance(path_RRT[look_ahead_idx], robot_pose) < (look_ahead_idx == path_RRT.size()-1 ? 0.3 : 0.5) 
                 && look_ahead_idx < path_RRT.size()) {
                 look_ahead_idx++;
                 pid_ctrl.reset();
@@ -298,7 +298,7 @@ void generate_path_RRT()
             Tree.generateRRT(x_max, x_min, y_max, y_min, k * 3, MaxStep/2);
         } else Tree.generateRRT(world_x_max, world_x_min, world_y_max, world_y_min, K, MaxStep);
 
-        Tree.visualizeTree(); Tree.visualizeTree(); getchar();
+        //Tree.visualizeTree(); Tree.visualizeTree(); getchar();
 
 		std::vector<traj> start_waypoint = Tree.backtracking_traj();
 		start_waypoint.push_back(rrtTree::point2traj(last_points[i]));
